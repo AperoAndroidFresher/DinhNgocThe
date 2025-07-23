@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.dinhngocthe.ui.lesson_06_jetpack_compose_ui.MainScreen
+import com.example.dinhngocthe.ui.view.MainScreen
 import com.example.dinhngocthe.ui.theme.DinhNgocTheTheme
 
 class MainActivity : ComponentActivity() {

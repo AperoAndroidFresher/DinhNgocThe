@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.ui.lesson_06_jetpack_compose_ui
+package com.example.dinhngocthe.ui.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +21,7 @@ fun InputField(
     value: String = "",
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    enable: Boolean = true,
     minLine: Int = 1,
     maxLine: Int = 1
 ) {
@@ -37,9 +38,6 @@ fun InputField(
             value = value,
             onValueChange = onValueChange,
             placeholder = { Text("${name[0].uppercase()}${name.slice(1 until name.length)}...", fontSize = 14.sp) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 5.dp),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
@@ -55,7 +53,11 @@ fun InputField(
             ),
             singleLine = false,
             minLines = minLine,
-            maxLines = maxLine
+            maxLines = maxLine,
+            enabled = enable,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp)
         )
     }
 }
