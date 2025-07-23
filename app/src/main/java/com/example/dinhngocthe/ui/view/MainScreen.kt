@@ -1,6 +1,8 @@
 package com.example.dinhngocthe.ui.view
 
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
@@ -24,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,20 +36,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.example.dinhngocthe.ui.theme.AppFonts
+import kotlinx.coroutines.delay
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
     var txtName by remember { mutableStateOf("") }
     var txtPhoneNumber by remember { mutableStateOf("") }
     var txtUniversityName by remember { mutableStateOf("") }
     var txtDescribeYourSelf by remember { mutableStateOf("") }
     var enableEditing by remember { mutableStateOf(false) }
     var showEditButton by remember { mutableStateOf(true) }
+    var nameWarning by remember { mutableStateOf("") }
+    var phoneNumberWarning by remember { mutableStateOf("") }
+    var universityNameWarning by remember { mutableStateOf("") }
+    var onDismissSuccessDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,6 +84,9 @@ fun MainScreen() {
             onUniversityNameChange = { txtUniversityName = it },
             txtDescribeYourSelf,
             onDescribeYourSelfChange = { txtDescribeYourSelf = it },
+            nameWarning,
+            phoneNumberWarning,
+            universityNameWarning,
             enableEditing
         )
 
@@ -80,7 +95,15 @@ fun MainScreen() {
         if (enableEditing) {
             Button(
                 onClick = {
-
+                    submit(
+                        txtName,
+                        txtPhoneNumber,
+                        txtUniversityName,
+                        { nameWarning = it },
+                        { phoneNumberWarning = it },
+                        { universityNameWarning = it },
+                        { onDismissSuccessDialog = it }
+                    )
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -97,6 +120,19 @@ fun MainScreen() {
                     fontSize = 16.sp,
                     fontFamily = AppFonts.mainFontBold,
                 )
+            }
+        }
+
+        if (onDismissSuccessDialog) {
+            SuccessDialog(
+                onDismiss = {
+                    onDismissSuccessDialog
+                },
+                "Your information has been updated"
+            )
+            LaunchedEffect(Unit) {
+                delay(2000)
+                onDismissSuccessDialog = false
             }
         }
     }
@@ -163,6 +199,9 @@ fun Main(
     onUniversityNameChange: (String) -> Unit,
     txtDescribeYourSelf: String,
     onDescribeYourSelfChange: (String) -> Unit,
+    nameWarning: String,
+    phoneNumberWarning: String,
+    universityNameWarning: String,
     enableEditing: Boolean
 ) {
     Row(
@@ -170,24 +209,44 @@ fun Main(
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp)
     ) {
-        InputField(
-            name = "name",
-            value = txtName,
-            onValueChange = onNameChange,
+        Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 10.dp),
-            enable = enableEditing
-        )
-        InputField(
-            name = "phone number",
-            value = txtPhoneNumber,
-            onValueChange = onPhoneNumberChange,
+                .padding(end = 10.dp)
+        ) {
+            InputField(
+                name = "name",
+                value = txtName,
+                onValueChange = onNameChange,
+                modifier = Modifier.fillMaxWidth(),
+                enable = enableEditing
+            )
+            Text(
+                nameWarning,
+                fontFamily = AppFonts.mainFont,
+                fontSize = 15.sp,
+                color = Color.Red
+            )
+        }
+        Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 10.dp),
-            enable = enableEditing
-        )
+                .padding(end = 10.dp)
+        ) {
+            InputField(
+                name = "phone number",
+                value = txtPhoneNumber,
+                onValueChange = onPhoneNumberChange,
+                modifier = Modifier.fillMaxWidth(),
+                enable = enableEditing
+            )
+            Text(
+                phoneNumberWarning,
+                fontFamily = AppFonts.mainFont,
+                fontSize = 15.sp,
+                color = Color.Red
+            )
+        }
     }
 
     Spacer(modifier = Modifier.height(30.dp))
@@ -198,6 +257,13 @@ fun Main(
         onValueChange = onUniversityNameChange,
         modifier = Modifier.padding(start = 15.dp, end = 15.dp),
         enable = enableEditing
+    )
+    Text(
+        universityNameWarning,
+        fontFamily = AppFonts.mainFont,
+        fontSize = 15.sp,
+        color = Color.Red,
+        modifier = Modifier.padding(start = 15.dp)
     )
 
     Spacer(modifier = Modifier.height(30.dp))
@@ -212,3 +278,57 @@ fun Main(
         maxLine = 8
     )
 }
+
+fun submit(
+    txtName: String,
+    txtPhoneNumber: String,
+    txtUniversityName: String,
+    onNameWarningChange: (String) -> Unit,
+    onPhoneNumberWarningChange: (String) -> Unit,
+    onUniversityNameWarningChange: (String) -> Unit,
+    onDismissSuccessDialog: (Boolean) -> Unit
+) {
+    var hasError = false
+
+    when {
+        txtName.isBlank() -> {
+            onNameWarningChange("Enter your name")
+            hasError = true
+        }
+        !txtName.all { it.isLetter() || it.isWhitespace() } -> {
+            onNameWarningChange("Invalid format")
+            hasError = true
+        }
+        else -> onNameWarningChange("")
+    }
+
+    when {
+        txtPhoneNumber.isBlank() -> {
+            onPhoneNumberWarningChange("Enter phone number")
+            hasError = true
+        }
+        !txtPhoneNumber.all { it.isDigit() } -> {
+            onPhoneNumberWarningChange("Invalid format")
+            hasError = true
+        }
+        else -> onPhoneNumberWarningChange("")
+    }
+
+    when {
+        txtUniversityName.isBlank() -> {
+            onUniversityNameWarningChange("Enter university name")
+            hasError = true
+        }
+        !txtUniversityName.all { it.isLetter() || it.isWhitespace() } -> {
+            onUniversityNameWarningChange("Invalid format")
+            hasError = true
+        }
+        else -> onUniversityNameWarningChange("")
+    }
+
+    if (!hasError) {
+        onDismissSuccessDialog(true)
+    }
+}
+
+
