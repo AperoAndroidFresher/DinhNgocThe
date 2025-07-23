@@ -49,7 +49,7 @@ fun InputField(
             textStyle = TextStyle(
                 fontFamily = AppFonts.mainFont,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = Color.Blue
             ),
             singleLine = false,
             minLines = minLine,
