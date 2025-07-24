@@ -46,7 +46,7 @@ import com.example.dinhngocthe.ui.theme.AppFonts
 import kotlinx.coroutines.delay
 
 @Composable
-fun MainScreen() {
+fun MainScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var txtName by remember { mutableStateOf("") }
     var txtPhoneNumber by remember { mutableStateOf("") }

@@ -43,7 +43,7 @@ import com.example.dinhngocthe.Song
 import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable
-fun MyPlaylistScreen() {
+fun MyPlaylistScreen(modifier: Modifier = Modifier) {
     val songs = remember {
         mutableStateListOf(
             Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
@@ -76,10 +76,9 @@ fun MyPlaylistScreen() {
     var menuExpandedIndex by remember { mutableIntStateOf(-1) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.dark))
-            .padding(top = 30.dp)
+            .padding(top = 10.dp)
     ) {
         Header(
             onClick = {
