@@ -169,7 +169,7 @@ fun ColumnScope.Header(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_edit),
-                    contentDescription = "Settings"
+                    contentDescription = "Edit Profile"
                 )
             }
         }
