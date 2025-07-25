@@ -1,8 +1,6 @@
 package com.example.dinhngocthe.ui.view
 
-
-import android.content.Context
-import android.widget.Toast
+import android.content.res.Resources
 import androidx.compose.foundation.Image
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
@@ -10,8 +8,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,15 +40,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.example.dinhngocthe.ui.theme.AppFonts
 import kotlinx.coroutines.delay
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    onChangeMode: () -> Unit,
+    isDarkTheme: Boolean,
+    innerPadding: Dp
+) {
     var txtName by remember { mutableStateOf("") }
     var txtPhoneNumber by remember { mutableStateOf("") }
     var txtUniversityName by remember { mutableStateOf("") }
@@ -58,19 +64,26 @@ fun MainScreen(modifier: Modifier = Modifier) {
     var phoneNumberWarning by remember { mutableStateOf("") }
     var universityNameWarning by remember { mutableStateOf("") }
     var onDismissSuccessDialog by remember { mutableStateOf(false) }
+    var icChangeMode by remember { mutableStateOf(R.drawable.ic_dark_mode ) }
+    icChangeMode = if (isDarkTheme == false) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF5FAFF))
-            .padding(top = 30.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(top = innerPadding)
     ) {
         Header(
-            onClick = {
+            onEdit = {
                 enableEditing = !enableEditing
                 showEditButton = !showEditButton
             },
-            showEditButton = showEditButton
+            showEditButton = showEditButton,
+            onChangeMode = {
+                onChangeMode()
+                icChangeMode = if (isDarkTheme == true) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
+            },
+            icChangeMode
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -110,8 +123,8 @@ fun MainScreen(modifier: Modifier = Modifier) {
                     .width(150.dp)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -140,28 +153,43 @@ fun MainScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun ColumnScope.Header(
-    onClick: () -> Unit,
-    showEditButton: Boolean
+    onEdit: () -> Unit,
+    showEditButton: Boolean,
+    onChangeMode: () -> Unit,
+    icChangeMode: Int
 ){
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
     ) {
+        IconButton(
+            onClick = { onChangeMode() },
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .size(50.dp)
+                .padding(10.dp)
+        ) {
+            Icon(
+                painter = painterResource(icChangeMode),
+                contentDescription = "Switch display mode",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
         Text(
             text = "MY INFORMATION",
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(top = 50.dp),
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontFamily = AppFonts.mainFont
-            )
+                .padding(top = 10.dp),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary
         )
 
         if (showEditButton) {
             IconButton(
-                onClick = { onClick() },
+                onClick = { onEdit() },
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .size(50.dp)
@@ -169,7 +197,8 @@ fun ColumnScope.Header(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_edit),
-                    contentDescription = "Edit Profile"
+                    contentDescription = "Edit Profile",
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -183,7 +212,7 @@ fun ColumnScope.Header(
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
             .size(150.dp)
-            .border(2.dp, Color.Black, shape = CircleShape)
+            .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
             .clip(CircleShape),
         contentScale = ContentScale.Crop,
     )
@@ -223,9 +252,7 @@ fun Main(
             )
             Text(
                 nameWarning,
-                fontFamily = AppFonts.mainFont,
-                fontSize = 15.sp,
-                color = Color.Red
+                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.error)
             )
         }
         Column(
@@ -242,14 +269,12 @@ fun Main(
             )
             Text(
                 phoneNumberWarning,
-                fontFamily = AppFonts.mainFont,
-                fontSize = 15.sp,
-                color = Color.Red
+                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.error)
             )
         }
     }
 
-    Spacer(modifier = Modifier.height(30.dp))
+    Spacer(modifier = Modifier.height(10.dp))
 
     InputField(
         name = "university name",
@@ -260,13 +285,11 @@ fun Main(
     )
     Text(
         universityNameWarning,
-        fontFamily = AppFonts.mainFont,
-        fontSize = 15.sp,
-        color = Color.Red,
+        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.error),
         modifier = Modifier.padding(start = 15.dp)
     )
 
-    Spacer(modifier = Modifier.height(30.dp))
+    Spacer(modifier = Modifier.height(10.dp))
 
     InputField(
         name = "describe yourself",
@@ -331,4 +354,8 @@ fun submit(
     }
 }
 
-
+//@Preview
+//@Composable
+//private fun preview() {
+//    MainScreen()
+//}

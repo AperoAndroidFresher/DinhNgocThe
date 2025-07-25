@@ -1,5 +1,7 @@
-package com.example.dinhngocthe
+package com.example.dinhngocthe.model
+
 import com.example.dinhngocthe.R
+
 data class Song(
     val name: String = "Song name",
     val singers: String = "Singer",

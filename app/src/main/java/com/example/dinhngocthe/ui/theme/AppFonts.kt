@@ -8,4 +8,5 @@ import com.example.dinhngocthe.R
 object AppFonts {
     val mainFontBold = FontFamily(Font(R.font.main_font_bold, FontWeight.Bold))
     val mainFont = FontFamily(Font(R.font.main_font))
+    val mainFontBlack = FontFamily(Font(R.font.main_font_black))
 }
