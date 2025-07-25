@@ -39,7 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.Song
+import com.example.dinhngocthe.model.Song
 import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable

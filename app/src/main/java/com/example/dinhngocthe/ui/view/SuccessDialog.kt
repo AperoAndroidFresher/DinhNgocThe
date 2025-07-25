@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +37,7 @@ fun SuccessDialog(onDismiss: () -> Unit, message: String) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(25.dp)
         ) {
             Column(
@@ -59,17 +60,13 @@ fun SuccessDialog(onDismiss: () -> Unit, message: String) {
 
                 Text(
                     "Success!",
-                    fontFamily = AppFonts.mainFontBold,
-                    fontSize = 26.sp,
-                    color = Color(0xFF0BA27D)
+                    style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.primary)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     message,
-                    fontFamily = AppFonts.mainFont,
-                    fontSize = 14.sp,
-                    color = Color.Black
+                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.primary)
                 )
             }
         }
