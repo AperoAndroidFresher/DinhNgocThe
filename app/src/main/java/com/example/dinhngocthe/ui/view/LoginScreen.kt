@@ -4,11 +4,10 @@ import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,20 +28,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.dinhngocthe.model.Users
 import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable
 fun LoginScreen(
-    innerPadding: Dp = 0.dp,
-    onSignUp: () -> Unit
+    innerPadding: PaddingValues,
+    onSignUp: () -> Unit,
+    loginSuccess: () -> Unit
 ) {
     var userName by remember { mutableStateOf("") }
     var passWord by remember { mutableStateOf("") }
@@ -54,7 +52,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.surface)
-            .padding(top = innerPadding)
+            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
     ) {
         Header()
 
@@ -72,7 +70,14 @@ fun LoginScreen(
                 passWordVisible = !passWordVisible
                 trailingIcon = if (!passWordVisible) R.drawable.ic_show else R.drawable.ic_hidden
             },
-            trailingIcon
+            trailingIcon,
+            onLoginClick = {
+                for (user in Users.users) {
+                    if (userName == user.userName && passWord == user.passWord) {
+                        loginSuccess()
+                    }
+                }
+            }
         )
 
         Footer(onSignUp)
@@ -112,7 +117,8 @@ fun Main(
     onCheckedChange: (Boolean) -> Unit,
     passWordVisible: Boolean = true,
     onClickTrailingIcon: () -> Unit,
-    trailingIcon: Int
+    trailingIcon: Int,
+    onLoginClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -163,7 +169,7 @@ fun Main(
         Spacer(Modifier.size(35.dp))
 
         Button(
-            onClick = {},
+            onClick = onLoginClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -207,8 +213,8 @@ fun ColumnScope.Footer(
     }
 }
 
-@Preview
-@Composable
-private fun preview() {
-    LoginScreen(0.dp, {})
-}
+//@Preview
+//@Composable
+//private fun preview() {
+//    LoginScreen(0.dp, {}, {})
+//}
