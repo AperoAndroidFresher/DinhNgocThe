@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
@@ -43,7 +45,7 @@ import com.example.dinhngocthe.model.Song
 import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable
-fun MyPlaylistScreen(modifier: Modifier = Modifier) {
+fun MyPlaylistScreen(innerPadding: PaddingValues) {
     val songs = remember {
         mutableStateListOf(
             Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
@@ -76,9 +78,10 @@ fun MyPlaylistScreen(modifier: Modifier = Modifier) {
     var menuExpandedIndex by remember { mutableIntStateOf(-1) }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(top = 10.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
     ) {
         Header(
             onClick = {
@@ -127,9 +130,8 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
     ) {
         Text(
             "My Playlist",
-            fontFamily = AppFonts.mainFontBold,
-            color = Color.White,
-            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(top = 5.dp)
@@ -149,7 +151,7 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
                 Icon(
                     painter = painterResource(iconButtonChangeMode),
                     contentDescription = "Press to switch to display modes",
-                    tint = Color.Unspecified,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -163,7 +165,7 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
                 Icon(
                     painter = painterResource(R.drawable.ic_sort),
                     contentDescription = "Press to sort",
-                    tint = Color.Unspecified,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .size(25.dp)
                         .padding(top = 1.dp)
@@ -208,15 +210,13 @@ fun ListSongs(
                     ) {
                         Text(
                             songs[index].name,
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontFamily = AppFonts.mainFontBold
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelSmall
                         )
                         Text(
                             songs[index].singers,
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            fontFamily = AppFonts.mainFontBold
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp)
                         )
                     }
                 }
@@ -227,9 +227,8 @@ fun ListSongs(
                 ) {
                     Text(
                         text = formatDuration(songs[index].duration),
-                        fontFamily = AppFonts.mainFont,
-                        fontSize = 16.sp,
-                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(top = 2.dp, end = 10.dp)
                     )
 
@@ -241,7 +240,7 @@ fun ListSongs(
                             Icon(
                                 painter = painterResource(R.drawable.icon_menu),
                                 contentDescription = "Menu",
-                                tint = Color.Unspecified,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -295,7 +294,7 @@ fun GridSongs(
                             painter = painterResource(R.drawable.ic_menu_round),
                             contentDescription = "Menu",
                             modifier = Modifier.fillMaxSize(),
-                            tint = Color.Unspecified
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
 
@@ -311,21 +310,18 @@ fun GridSongs(
                 Spacer(Modifier.size(15.dp))
                 Text(
                     text = songs[index].name,
-                    fontFamily = AppFonts.mainFontBold,
-                    color = Color.White,
-                    fontSize = 18.sp
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 18.sp)
                 )
                 Text(
                     text = songs[index].singers,
-                    fontFamily = AppFonts.mainFontBold,
-                    color = Color.Gray,
-                    fontSize = 14.sp
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = formatDuration(songs[index].duration),
-                    fontFamily = AppFonts.mainFont,
-                    color = Color.White,
-                    fontSize = 15.sp
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         }

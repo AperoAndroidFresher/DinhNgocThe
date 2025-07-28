@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +19,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +41,9 @@ import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable
 fun SignUpScreen(
-    innerPadding: Dp = 0.dp,
-    signUpSuccess: () -> Unit
+    innerPadding: PaddingValues,
+    signUpSuccess: () -> Unit,
+    onBack: () -> Unit
 ) {
     var userName by remember { mutableStateOf("") }
     var passWord by remember { mutableStateOf("") }
@@ -58,9 +62,9 @@ fun SignUpScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.surface)
-            .padding(top = innerPadding)
+            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
     ) {
-        HeaderSignUp()
+        HeaderSignUp(onBack)
 
         Spacer(Modifier.size(50.dp))
 
@@ -123,12 +127,24 @@ fun SignUpScreen(
 }
 
 @Composable
-fun HeaderSignUp() {
+fun HeaderSignUp(onBack: () -> Unit) {
     Column(
         modifier = Modifier
-            .padding(top = 50.dp)
             .fillMaxWidth()
     ) {
+        IconButton(
+            onClick = onBack
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_back),
+                modifier = Modifier.size(50.dp).padding(8.dp),
+                contentDescription = "Go back",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Spacer(Modifier.size(50.dp))
+
         Image(
             painter = painterResource(R.drawable.ic_logo),
             contentDescription = "Logo",
@@ -371,5 +387,8 @@ fun submit(
 //@Preview
 //@Composable
 //private fun preview() {
-//    SignUpScreen()
+//    SignUpScreen(
+//        signUpSuccess = {},
+//        onBack = {}
+//    )
 //}

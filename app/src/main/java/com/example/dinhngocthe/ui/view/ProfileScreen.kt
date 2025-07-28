@@ -1,6 +1,5 @@
 package com.example.dinhngocthe.ui.view
 
-import android.content.res.Resources
 import androidx.compose.foundation.Image
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,12 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,11 +42,10 @@ import com.example.dinhngocthe.ui.theme.AppFonts
 import kotlinx.coroutines.delay
 
 @Composable
-fun MainScreen(
-    modifier: Modifier = Modifier,
+fun ProfileScreen(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
-    innerPadding: Dp
+    innerPadding: PaddingValues
 ) {
     var txtName by remember { mutableStateOf("") }
     var txtPhoneNumber by remember { mutableStateOf("") }
@@ -68,10 +61,10 @@ fun MainScreen(
     icChangeMode = if (isDarkTheme == false) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(top = innerPadding)
+            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
     ) {
         Header(
             onEdit = {

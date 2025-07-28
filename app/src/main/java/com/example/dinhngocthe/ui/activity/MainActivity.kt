@@ -7,11 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.navigation.compose.rememberNavController
-import com.example.dinhngocthe.navigation.AppNavHost
+import com.example.dinhngocthe.navigation.BottomNavBar
+import com.example.dinhngocthe.navigation.NavRoutes
 import com.example.dinhngocthe.ui.theme.AppTheme
-import com.example.dinhngocthe.ui.view.LoginScreen
-import com.example.dinhngocthe.ui.view.MainScreen
 import com.example.dinhngocthe.ui.view.SplashScreen
 import kotlinx.coroutines.delay
 
@@ -22,7 +20,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
             var splashVisible by remember { mutableStateOf(true) }
-            val navController = rememberNavController()
             WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isDarkTheme
 
             LaunchedEffect(Unit) {
@@ -34,12 +31,10 @@ class MainActivity : ComponentActivity() {
                 if (splashVisible) {
                     SplashScreen()
                 } else {
-                    Scaffold { innerPadding ->
-                        AppNavHost(
-                            navHostController = navController,
-                            innerPadding = innerPadding.calculateTopPadding()
-                        )
-                    }
+                    NavRoutes(
+                        onChangeMode = { isDarkTheme = !isDarkTheme },
+                        isDarkTheme
+                    )
                 }
             }
         }

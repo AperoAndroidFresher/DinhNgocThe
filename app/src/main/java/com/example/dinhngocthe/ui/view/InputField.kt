@@ -65,20 +65,18 @@ fun InputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 5.dp),
-            leadingIcon = {
-                leadingIcon?.let {
+            leadingIcon = if (leadingIcon != null) {
+                {
                     Icon(
                         painter = painterResource(leadingIcon),
                         contentDescription = "Leading icon",
                         modifier = Modifier.size(16.dp)
                     )
                 }
-            },
-            trailingIcon = {
-                trailingIcon?.let {
-                    IconButton(
-                        onClick = onClickTrailingIcon
-                    ) {
+            } else null,
+            trailingIcon = if (trailingIcon != null) {
+                {
+                    IconButton(onClick = onClickTrailingIcon) {
                         Icon(
                             painter = painterResource(trailingIcon),
                             contentDescription = "Trailing icon",
@@ -86,7 +84,7 @@ fun InputField(
                         )
                     }
                 }
-            },
+            } else null,
             visualTransformation = if (!passWordVisible) VisualTransformation.None else PasswordVisualTransformation()
         )
     }
