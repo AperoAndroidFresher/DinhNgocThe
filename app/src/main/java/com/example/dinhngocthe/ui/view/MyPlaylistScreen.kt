@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -238,7 +243,7 @@ fun ListSongs(
                             modifier = Modifier.size(35.dp).padding(10.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.icon_menu),
+                                painter = painterResource(R.drawable.ic_menu),
                                 contentDescription = "Menu",
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.fillMaxSize()
@@ -260,7 +265,6 @@ fun ListSongs(
     }
 }
 
-
 @Composable
 fun GridSongs(
     songs: SnapshotStateList<Song>,
@@ -270,8 +274,9 @@ fun GridSongs(
     onRemove: (Int) -> Unit,
     onShare: (Int) -> Unit
     ) {
+    var screenWidth = LocalConfiguration.current.screenWidthDp.dp
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed((screenWidth.value / 200.dp.value).toInt()),
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
@@ -284,14 +289,21 @@ fun GridSongs(
                     Image(
                         painter = painterResource(songs[index].coverArt),
                         contentDescription = "Cover art",
-                        modifier = Modifier.clip(RoundedCornerShape(7.dp))
+                        modifier = Modifier.clip(RoundedCornerShape(7.dp)).size(150.dp)
                     )
-                    IconButton(
+                    Button(
                         onClick = { onShowMenu(index) },
-                        modifier = Modifier.align(Alignment.TopEnd).size(38.dp).padding(5.dp)
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(34.dp)
+                            .clip(CircleShape),
+                        contentPadding = PaddingValues(7.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                        )
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_menu_round),
+                            painter = painterResource(R.drawable.ic_menu),
                             contentDescription = "Menu",
                             modifier = Modifier.fillMaxSize(),
                             tint = MaterialTheme.colorScheme.onSurface
