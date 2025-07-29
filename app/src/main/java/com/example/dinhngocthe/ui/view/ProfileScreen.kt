@@ -1,5 +1,9 @@
 package com.example.dinhngocthe.ui.view
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
@@ -33,11 +37,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.dinhngocthe.ui.theme.AppFonts
 import kotlinx.coroutines.delay
 
@@ -51,14 +61,26 @@ fun ProfileScreen(
     var txtPhoneNumber by remember { mutableStateOf("") }
     var txtUniversityName by remember { mutableStateOf("") }
     var txtDescribeYourSelf by remember { mutableStateOf("") }
+
     var enableEditing by remember { mutableStateOf(false) }
     var showEditButton by remember { mutableStateOf(true) }
+
     var nameWarning by remember { mutableStateOf("") }
     var phoneNumberWarning by remember { mutableStateOf("") }
     var universityNameWarning by remember { mutableStateOf("") }
     var onDismissSuccessDialog by remember { mutableStateOf(false) }
+
     var icChangeMode by remember { mutableStateOf(R.drawable.ic_dark_mode ) }
     icChangeMode = if (isDarkTheme == false) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
+
+    var avatarUri by remember { mutableStateOf<Uri?>(null) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        avatarUri = uri
+    }
+
+
 
     Column(
         modifier = Modifier
@@ -76,7 +98,10 @@ fun ProfileScreen(
                 onChangeMode()
                 icChangeMode = if (isDarkTheme == true) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
             },
-            icChangeMode
+            icChangeMode,
+            enableEditing,
+            onChangePicture = { imagePickerLauncher.launch("image/*") },
+            avatarUri = avatarUri
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -149,8 +174,15 @@ fun ColumnScope.Header(
     onEdit: () -> Unit,
     showEditButton: Boolean,
     onChangeMode: () -> Unit,
-    icChangeMode: Int
+    icChangeMode: Int,
+    enableEditing: Boolean,
+    onChangePicture: () -> Unit,
+    avatarUri: Uri?
 ){
+    val density = LocalDensity.current
+    val imageSizePx = with(density) { 150.dp.roundToPx() }
+    //Toast.makeText(LocalContext.current, imageSizePx.toString(), Toast.LENGTH_SHORT).show()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -199,16 +231,59 @@ fun ColumnScope.Header(
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    Image(
-        painterResource(R.drawable.img_avatar),
-        contentDescription = "Avatar",
+    Box(
         modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .size(150.dp)
-            .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
-            .clip(CircleShape),
-        contentScale = ContentScale.Crop,
-    )
+            .fillMaxWidth()
+            .height(170.dp)
+    ) {
+        if (avatarUri != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(avatarUri)
+                    .size(imageSizePx)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Avatar",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .size(150.dp)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
+                    .clip(CircleShape)
+            )
+        } else Image(
+            painterResource(R.drawable.img_avatar),
+            contentDescription = "Avatar",
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .size(150.dp)
+                .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+        )
+
+        if (enableEditing) {
+            Button(
+                onClick = { onChangePicture() },
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .align(Alignment.BottomCenter),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                ),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_choose_picture),
+                    contentDescription = "Press to change avatar",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+        }
+    }
 }
 
 @Composable

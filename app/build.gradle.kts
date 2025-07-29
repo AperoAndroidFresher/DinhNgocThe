@@ -67,4 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.kotlinx.serialization.core)
 
+    //Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 }

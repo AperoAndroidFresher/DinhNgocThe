@@ -25,7 +25,7 @@ fun NavRoutes(
     val items = listOf<BottomNavBarItem>(
         BottomNavBarItem(0, "Home", R.drawable.ic_home, Destination.HomeRoute),
         BottomNavBarItem(1, "Library", R.drawable.ic_library, Destination.LibraryRoute),
-        BottomNavBarItem(0, "Playlist", R.drawable.ic_playlist, Destination.MyPlaylistRoute),
+        BottomNavBarItem(2, "Playlist", R.drawable.ic_playlist, Destination.MyPlaylistRoute),
     )
 
     Scaffold(
@@ -49,7 +49,7 @@ fun NavRoutes(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
-                entry< Destination.LoginRoute> {
+                entry<Destination.LoginRoute> {
                     LoginScreen(
                         innerPadding = innerPadding,
                         onSignUp = { backStack.add(Destination.SignUpRoute) },
