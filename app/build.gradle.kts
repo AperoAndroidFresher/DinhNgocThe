@@ -70,4 +70,17 @@ dependencies {
     //Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // Lifecycle Compose (để collectAsStateWithLifecycle)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // ViewModel & Lifecycle (quản lý state)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v284)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+
+    // Kotlin Coroutines (StateFlow, SharedFlow, Channel)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
 }

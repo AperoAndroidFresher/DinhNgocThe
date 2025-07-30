@@ -1,19 +1,18 @@
-package com.example.dinhngocthe.navigation
+package com.example.dinhngocthe.presentation.navigation
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.ui.view.HomeScreen
-import com.example.dinhngocthe.ui.view.LibraryScreen
-import com.example.dinhngocthe.ui.view.LoginScreen
-import com.example.dinhngocthe.ui.view.MyPlaylistScreen
-import com.example.dinhngocthe.ui.view.ProfileScreen
-import com.example.dinhngocthe.ui.view.SignUpScreen
+import com.example.dinhngocthe.presentation.view.HomeScreen
+import com.example.dinhngocthe.presentation.view.LibraryScreen
+import com.example.dinhngocthe.presentation.login.LoginScreen
+import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
+import com.example.dinhngocthe.presentation.profile.ProfileScreen
+import com.example.dinhngocthe.presentation.signup.SignUpScreen
 
 @Composable
 fun NavRoutes(

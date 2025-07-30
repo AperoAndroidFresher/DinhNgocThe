@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.navigation
+package com.example.dinhngocthe.presentation.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

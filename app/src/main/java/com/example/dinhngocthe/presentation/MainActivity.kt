@@ -1,16 +1,18 @@
-package com.example.dinhngocthe.ui.activity
+package com.example.dinhngocthe.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.dinhngocthe.navigation.BottomNavBar
-import com.example.dinhngocthe.navigation.NavRoutes
-import com.example.dinhngocthe.ui.theme.AppTheme
-import com.example.dinhngocthe.ui.view.SplashScreen
+import com.example.dinhngocthe.presentation.navigation.NavRoutes
+import com.example.dinhngocthe.presentation.theme.AppTheme
+import com.example.dinhngocthe.presentation.view.SplashScreen
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
