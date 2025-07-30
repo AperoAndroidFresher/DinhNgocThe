@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +31,7 @@ fun InputField(
     leadingIcon: Int? = null,
     trailingIcon: Int? = null,
     onClickTrailingIcon: () -> Unit = {},
-    passWordVisible: Boolean = false
+    passWordVisible: Boolean = true
 ) {
     Column(modifier = modifier) {
         if (showLabel) {
@@ -85,7 +85,7 @@ fun InputField(
                     }
                 }
             } else null,
-            visualTransformation = if (!passWordVisible) VisualTransformation.None else PasswordVisualTransformation()
+            visualTransformation = if (passWordVisible) VisualTransformation.None else PasswordVisualTransformation()
         )
     }
 }

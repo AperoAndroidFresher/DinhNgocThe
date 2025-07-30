@@ -1,130 +1,74 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.playlist
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.model.Song
-import com.example.dinhngocthe.ui.theme.AppFonts
+import com.example.dinhngocthe.presentation.view.MenuSongDropDown
 
 @Composable
-fun MyPlaylistScreen(innerPadding: PaddingValues) {
-    val songs = remember {
-        mutableStateListOf(
-            Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
-            Song("Giấc Mơ Khác", "Chillies", 210_000L, R.drawable.img_giac_mo_khac),
-            Song("Lặng", "Rhymastic", 200_000L, R.drawable.img_lang),
-            Song("Em Không Hiểu", "Changg, Minh Huy", 235_000L, R.drawable.img_em_khong_hieu),
-            Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
-            Song("Giấc Mơ Khác", "Chillies", 210_000L, R.drawable.img_giac_mo_khac),
-            Song("Lặng", "Rhymastic", 200_000L, R.drawable.img_lang),
-            Song("Em Không Hiểu", "Changg, Minh Huy", 235_000L, R.drawable.img_em_khong_hieu),
-            Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
-            Song("Giấc Mơ Khác", "Chillies", 210_000L, R.drawable.img_giac_mo_khac),
-            Song("Lặng", "Rhymastic", 200_000L, R.drawable.img_lang),
-            Song("Em Không Hiểu", "Changg, Minh Huy", 235_000L, R.drawable.img_em_khong_hieu),
-            Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
-            Song("Giấc Mơ Khác", "Chillies", 210_000L, R.drawable.img_giac_mo_khac),
-            Song("Lặng", "Rhymastic", 200_000L, R.drawable.img_lang),
-            Song("Em Không Hiểu", "Changg, Minh Huy", 235_000L, R.drawable.img_em_khong_hieu),
-            Song("1000 Ánh Mắt", "Shiki, Obito", 200_000L, R.drawable.img_1000_anh_mat),
-            Song("Giấc Mơ Khác", "Chillies", 210_000L, R.drawable.img_giac_mo_khac),
-            Song("Lặng", "Rhymastic", 200_000L, R.drawable.img_lang),
-            Song("Em Không Hiểu", "Changg, Minh Huy", 235_000L, R.drawable.img_em_khong_hieu)
-        )
-    }
-
-
-
-    var displayMode by remember { mutableStateOf(true) } //true is list mode
-    var iconButtonChangeMode by remember { mutableIntStateOf(R.drawable.ic_grid_mode) }
-    var menuExpandedIndex by remember { mutableIntStateOf(-1) }
+fun MyPlaylistScreen(
+    innerPadding: PaddingValues,
+    viewModel: PlaylistViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val icon = if (state.isListMode) R.drawable.ic_grid_mode else R.drawable.ic_list_mode
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+            .padding(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding()
+            )
     ) {
         Header(
-            onClick = {
-                displayMode = !displayMode
-                iconButtonChangeMode = if (displayMode) R.drawable.ic_grid_mode else R.drawable.ic_list_mode
-            },
-            iconButtonChangeMode
+            onClick = { viewModel.processIntent(PlaylistIntent.ToggleDisplayMode) },
+            iconButtonChangeMode = icon
         )
 
         Spacer(Modifier.size(30.dp))
 
-        //Switch mode
-        if (displayMode) ListSongs(
-            songs = songs,
-            onShowMenu = { index -> menuExpandedIndex = index },
-            expandedIndex = menuExpandedIndex,
-            onDismissMenu = { menuExpandedIndex = -1 },
-            onRemoveSong = { index ->
-                songs.removeAt(index)
-                menuExpandedIndex = -1
-            },
-            onShare = {
-                menuExpandedIndex = -1
-            }
-        )
-        else GridSongs(
-            songs = songs,
-            onShowMenu = { index -> menuExpandedIndex = index },
-            expandedIndex = menuExpandedIndex,
-            onDismissMenu = { menuExpandedIndex = -1},
-            onRemove = { index ->
-                songs.removeAt(index)
-                menuExpandedIndex = -1
-            },
-            onShare = {
-                menuExpandedIndex = -1
-            }
-        )
+        if (state.isListMode) {
+            ListSongs(
+                songs = state.songs,
+                expandedIndex = state.expandedMenuIndex,
+                onShowMenu = { viewModel.processIntent(PlaylistIntent.ShowMenu(it)) },
+                onDismissMenu = { viewModel.processIntent(PlaylistIntent.DismissMenu) },
+                onRemoveSong = { viewModel.processIntent(PlaylistIntent.RemoveSong(it)) },
+                onShare = { viewModel.processIntent(PlaylistIntent.ShareSong(it)) }
+            )
+        } else {
+            GridSongs(
+                songs = state.songs,
+                expandedIndex = state.expandedMenuIndex,
+                onShowMenu = { viewModel.processIntent(PlaylistIntent.ShowMenu(it)) },
+                onDismissMenu = { viewModel.processIntent(PlaylistIntent.DismissMenu) },
+                onRemove = { viewModel.processIntent(PlaylistIntent.RemoveSong(it)) },
+                onShare = { viewModel.processIntent(PlaylistIntent.ShareSong(it)) }
+            )
+        }
     }
 }
 
@@ -137,9 +81,7 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
             "My Playlist",
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(top = 5.dp)
+            modifier = Modifier.align(Alignment.Center)
         )
 
         Row(
@@ -148,32 +90,26 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
                 .padding(end = 10.dp)
         ) {
             IconButton(
-                onClick = { onClick() },
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterVertically)
+                onClick = onClick,
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     painter = painterResource(iconButtonChangeMode),
-                    contentDescription = "Press to switch to display modes",
+                    contentDescription = "Switch display mode",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp)
                 )
             }
 
             IconButton(
-                onClick = {},
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterVertically)
+                onClick = { },
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_sort),
-                    contentDescription = "Press to sort",
+                    contentDescription = "Sort",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .size(25.dp)
-                        .padding(top = 1.dp)
+                    modifier = Modifier.size(25.dp)
                 )
             }
         }
@@ -182,32 +118,30 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
 
 @Composable
 fun ListSongs(
-    songs: SnapshotStateList<Song>,
-    onShowMenu: (Int) -> Unit,
+    songs: List<Song>,
     expandedIndex: Int,
+    onShowMenu: (Int) -> Unit,
     onDismissMenu: () -> Unit,
     onRemoveSong: (Int) -> Unit,
     onShare: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(songs.size) { index ->
             Box(modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row {
                     Image(
-                        painterResource(songs[index].coverArt),
+                        painter = painterResource(songs[index].coverArt),
                         contentDescription = "Cover art",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(50.dp)
                             .clip(RoundedCornerShape(5.dp))
                     )
-
                     Spacer(Modifier.size(15.dp))
-
                     Column(
                         modifier = Modifier
                             .fillMaxHeight()
@@ -234,19 +168,18 @@ fun ListSongs(
                         text = formatDuration(songs[index].duration),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(top = 2.dp, end = 10.dp)
+                        modifier = Modifier.padding(end = 10.dp)
                     )
 
                     Box {
                         IconButton(
                             onClick = { onShowMenu(index) },
-                            modifier = Modifier.size(35.dp).padding(10.dp)
+                            modifier = Modifier.size(35.dp)
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_menu),
                                 contentDescription = "Menu",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.fillMaxSize()
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -267,29 +200,31 @@ fun ListSongs(
 
 @Composable
 fun GridSongs(
-    songs: SnapshotStateList<Song>,
-    onShowMenu: (Int) -> Unit,
+    songs: List<Song>,
     expandedIndex: Int,
+    onShowMenu: (Int) -> Unit,
     onDismissMenu: () -> Unit,
     onRemove: (Int) -> Unit,
     onShare: (Int) -> Unit
-    ) {
-    var screenWidth = LocalConfiguration.current.screenWidthDp.dp
+) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     LazyVerticalGrid(
         columns = GridCells.Fixed((screenWidth.value / 200.dp.value).toInt()),
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        items(songs.size) {index ->
+        items(songs.size) { index ->
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 30.dp)) {
+                Box(modifier = Modifier.padding(horizontal = 30.dp)) {
                     Image(
                         painter = painterResource(songs[index].coverArt),
                         contentDescription = "Cover art",
-                        modifier = Modifier.clip(RoundedCornerShape(7.dp)).size(150.dp)
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(7.dp))
+                            .size(150.dp)
                     )
                     Button(
                         onClick = { onShowMenu(index) },
@@ -347,9 +282,3 @@ private fun formatDuration(durationInMillis: Long): String {
     val seconds = totalSeconds % 60
     return String.format("%d:%02d", minutes, seconds)
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//private fun preview() {
-//    MyPlaylistScreen()
-//}

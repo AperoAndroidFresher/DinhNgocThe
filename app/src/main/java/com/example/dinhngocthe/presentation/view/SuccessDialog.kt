@@ -1,6 +1,5 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.view
 
-import android.os.Message
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -17,19 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.example.dinhngocthe.ui.theme.AppFonts
 
 @Composable
 fun SuccessDialog(onDismiss: () -> Unit, message: String) {

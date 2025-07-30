@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.ui.theme.AppFonts
+import com.example.dinhngocthe.presentation.theme.AppFonts
 
 @Composable
 fun MenuSongDropDown(

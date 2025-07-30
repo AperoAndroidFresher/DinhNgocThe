@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.ui.theme
+package com.example.dinhngocthe.presentation.theme
 
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily

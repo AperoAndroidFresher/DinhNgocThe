@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.view
 
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.dinhngocthe.ui.theme.AppFonts
+import com.example.dinhngocthe.presentation.theme.AppFonts
 
 @Preview(showBackground = true)
 @Composable

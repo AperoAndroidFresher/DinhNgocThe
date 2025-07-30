@@ -1,5 +1,6 @@
-package com.example.dinhngocthe.ui.view
+package com.example.dinhngocthe.presentation.login
 
+import android.widget.Toast
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,31 +23,41 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.model.Users
-import com.example.dinhngocthe.ui.theme.AppFonts
+import com.example.dinhngocthe.presentation.theme.AppFonts
+import com.example.dinhngocthe.presentation.view.InputField
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
     innerPadding: PaddingValues,
     onSignUp: () -> Unit,
-    loginSuccess: () -> Unit
+    loginSuccess: () -> Unit,
+    viewModel: LoginViewModel = viewModel()
 ) {
-    var userName by remember { mutableStateOf("") }
-    var passWord by remember { mutableStateOf("") }
-    var checked by remember { mutableStateOf(false) }
-    var passWordVisible by remember { mutableStateOf(true) }
-    var trailingIcon by remember { mutableStateOf(R.drawable.ic_hidden) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val trailingIcon = if (state.passwordVisible) R.drawable.ic_show else R.drawable.ic_hidden
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is LoginEvent.NavigateToHome -> loginSuccess()
+                is LoginEvent.NavigateToSignUp -> onSignUp()
+                is LoginEvent.ShowError -> if(event.error != "") Toast.makeText(context, event.error, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -59,28 +70,19 @@ fun LoginScreen(
         Spacer(Modifier.size(50.dp))
 
         Main(
-            userName,
-            onUserNameChange = { userName = it },
-            passWord,
-            onPassWordChange = { passWord = it },
-            checked,
-            onCheckedChange = {checked = it},
-            passWordVisible,
-            onClickTrailingIcon = {
-                passWordVisible = !passWordVisible
-                trailingIcon = if (!passWordVisible) R.drawable.ic_show else R.drawable.ic_hidden
-            },
+            username = state.username,
+            onUserNameChange = { viewModel.processIntent(LoginIntent.UsernameChanged(it)) },
+            password = state.password,
+            onPassWordChange = { viewModel.processIntent(LoginIntent.PasswordChanged(it)) },
+            checked = state.rememberMe,
+            onCheckedChange = { viewModel.processIntent(LoginIntent.RememberMeChecked(it)) },
+            passwordVisible = state.passwordVisible,
+            onClickTrailingIcon = { viewModel.processIntent(LoginIntent.TogglePasswordVisible) },
             trailingIcon,
-            onLoginClick = {
-                for (user in Users.users) {
-                    if (userName == user.userName && passWord == user.passWord) {
-                        loginSuccess()
-                    }
-                }
-            }
+            onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked) }
         )
 
-        Footer(onSignUp)
+        Footer(onSignUp = {viewModel.processIntent(LoginIntent.NavigateToSignUp)})
     }
 }
 
@@ -109,13 +111,13 @@ fun Header() {
 
 @Composable
 fun Main(
-    userName: String,
+    username: String,
     onUserNameChange: (String) -> Unit,
-    passWord: String,
+    password: String,
     onPassWordChange: (String) -> Unit,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    passWordVisible: Boolean = true,
+    passwordVisible: Boolean,
     onClickTrailingIcon: () -> Unit,
     trailingIcon: Int,
     onLoginClick: () -> Unit,
@@ -127,7 +129,7 @@ fun Main(
     ) {
         InputField(
             name = "user name",
-            value = userName,
+            value = username,
             onValueChange = onUserNameChange,
             modifier = Modifier.fillMaxWidth(),
             showLabel = false,
@@ -138,13 +140,13 @@ fun Main(
 
         InputField(
             name = "password",
-            value = passWord,
+            value = password,
             onValueChange = onPassWordChange,
             modifier = Modifier.fillMaxWidth(),
             showLabel = false,
             leadingIcon = R.drawable.ic_password,
             trailingIcon = trailingIcon,
-            passWordVisible = passWordVisible,
+            passWordVisible = passwordVisible,
             onClickTrailingIcon = onClickTrailingIcon
         )
 
