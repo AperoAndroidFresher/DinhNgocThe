@@ -7,32 +7,11 @@ import androidx.compose.foundation.Image
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,98 +21,87 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.InputField
 import com.example.dinhngocthe.presentation.view.SuccessDialog
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    viewModel: ProfileViewModel = viewModel()
 ) {
-    var txtName by remember { mutableStateOf("") }
-    var txtPhoneNumber by remember { mutableStateOf("") }
-    var txtUniversityName by remember { mutableStateOf("") }
-    var txtDescribeYourSelf by remember { mutableStateOf("") }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    var enableEditing by remember { mutableStateOf(false) }
-    var showEditButton by remember { mutableStateOf(true) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                ProfileEvent.ChangeTheme -> onChangeMode()
+                ProfileEvent.ShowSuccessDialog -> showSuccessDialog = true
+            }
+        }
+    }
 
-    var nameWarning by remember { mutableStateOf("") }
-    var phoneNumberWarning by remember { mutableStateOf("") }
-    var universityNameWarning by remember { mutableStateOf("") }
-    var onDismissSuccessDialog by remember { mutableStateOf(false) }
+    var icChangeMode = if (isDarkTheme) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
 
-    var icChangeMode by remember { mutableStateOf(R.drawable.ic_dark_mode ) }
-    icChangeMode = if (isDarkTheme == false) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
-
-    var avatarUri by remember { mutableStateOf<Uri?>(null) }
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        avatarUri = uri
+        viewModel.processIntent(ProfileIntent.AvatarChanged(uri))
     }
-
-
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding())
+            .padding(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding()
+            )
     ) {
         Header(
-            onEdit = {
-                enableEditing = !enableEditing
-                showEditButton = !showEditButton
-            },
-            showEditButton = showEditButton,
+            onEdit = { viewModel.processIntent(ProfileIntent.ToggleEditMode) },
+            showEditButton = !state.isEditing,
             onChangeMode = {
-                onChangeMode()
-                icChangeMode = if (isDarkTheme == true) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
+                viewModel.processIntent(ProfileIntent.ChangeTheme)
+                icChangeMode = if (isDarkTheme) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
             },
-            icChangeMode,
-            enableEditing,
+            icChangeMode = icChangeMode,
+            enableEditing = state.isEditing,
             onChangePicture = { imagePickerLauncher.launch("image/*") },
-            avatarUri = avatarUri
+            avatarUri = state.avatarUri
         )
 
         Spacer(modifier = Modifier.height(30.dp))
 
         Main(
-            txtName,
-            onNameChange = { txtName = it },
-            txtPhoneNumber,
-            onPhoneNumberChange = { txtPhoneNumber = it },
-            txtUniversityName,
-            onUniversityNameChange = { txtUniversityName = it },
-            txtDescribeYourSelf,
-            onDescribeYourSelfChange = { txtDescribeYourSelf = it },
-            nameWarning,
-            phoneNumberWarning,
-            universityNameWarning,
-            enableEditing
+            txtName = state.name,
+            onNameChange = { viewModel.processIntent(ProfileIntent.NameChanged(it)) },
+            txtPhoneNumber = state.phoneNumber,
+            onPhoneNumberChange = { viewModel.processIntent(ProfileIntent.PhoneNumberChanged(it)) },
+            txtUniversityName = state.university,
+            onUniversityNameChange = { viewModel.processIntent(ProfileIntent.UniversityChanged(it)) },
+            txtDescribeYourSelf = state.description,
+            onDescribeYourSelfChange = { viewModel.processIntent(ProfileIntent.DescriptionChanged(it)) },
+            nameWarning = state.nameWarning,
+            phoneNumberWarning = state.phoneWarning,
+            universityNameWarning = state.universityWarning,
+            enableEditing = state.isEditing
         )
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        if (enableEditing) {
+        if (state.isEditing) {
             Button(
-                onClick = {
-                    submit(
-                        txtName,
-                        txtPhoneNumber,
-                        txtUniversityName,
-                        { nameWarning = it },
-                        { phoneNumberWarning = it },
-                        { universityNameWarning = it },
-                        { onDismissSuccessDialog = it }
-                    )
-                },
+                onClick = { viewModel.processIntent(ProfileIntent.Submit) },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .width(150.dp)
@@ -152,16 +120,14 @@ fun ProfileScreen(
             }
         }
 
-        if (onDismissSuccessDialog) {
+        if (showSuccessDialog) {
             SuccessDialog(
-                onDismiss = {
-                    onDismissSuccessDialog
-                },
-                "Your information has been updated"
+                onDismiss = { showSuccessDialog = false },
+                message = "Your information has been updated"
             )
             LaunchedEffect(Unit) {
                 delay(2000)
-                onDismissSuccessDialog = false
+                showSuccessDialog = false
             }
         }
     }
@@ -176,10 +142,9 @@ fun ColumnScope.Header(
     enableEditing: Boolean,
     onChangePicture: () -> Unit,
     avatarUri: Uri?
-){
+) {
     val density = LocalDensity.current
     val imageSizePx = with(density) { 150.dp.roundToPx() }
-    //Toast.makeText(LocalContext.current, imageSizePx.toString(), Toast.LENGTH_SHORT).show()
 
     Box(
         modifier = Modifier
@@ -249,16 +214,18 @@ fun ColumnScope.Header(
                     .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
                     .clip(CircleShape)
             )
-        } else Image(
-            painterResource(R.drawable.img_avatar),
-            contentDescription = "Avatar",
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .size(150.dp)
-                .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
-        )
+        } else {
+            Image(
+                painterResource(R.drawable.img_avatar),
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .size(150.dp)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+        }
 
         if (enableEditing) {
             Button(
@@ -279,7 +246,6 @@ fun ColumnScope.Header(
                     modifier = Modifier.size(24.dp)
                 )
             }
-
         }
     }
 }
@@ -368,60 +334,4 @@ fun Main(
     )
 }
 
-fun submit(
-    txtName: String,
-    txtPhoneNumber: String,
-    txtUniversityName: String,
-    onNameWarningChange: (String) -> Unit,
-    onPhoneNumberWarningChange: (String) -> Unit,
-    onUniversityNameWarningChange: (String) -> Unit,
-    onDismissSuccessDialog: (Boolean) -> Unit
-) {
-    var hasError = false
 
-    when {
-        txtName.isBlank() -> {
-            onNameWarningChange("Enter your name")
-            hasError = true
-        }
-        !txtName.all { it.isLetter() || it.isWhitespace() } -> {
-            onNameWarningChange("Invalid format")
-            hasError = true
-        }
-        else -> onNameWarningChange("")
-    }
-
-    when {
-        txtPhoneNumber.isBlank() -> {
-            onPhoneNumberWarningChange("Enter phone number")
-            hasError = true
-        }
-        !txtPhoneNumber.all { it.isDigit() } -> {
-            onPhoneNumberWarningChange("Invalid format")
-            hasError = true
-        }
-        else -> onPhoneNumberWarningChange("")
-    }
-
-    when {
-        txtUniversityName.isBlank() -> {
-            onUniversityNameWarningChange("Enter university name")
-            hasError = true
-        }
-        !txtUniversityName.all { it.isLetter() || it.isWhitespace() } -> {
-            onUniversityNameWarningChange("Invalid format")
-            hasError = true
-        }
-        else -> onUniversityNameWarningChange("")
-    }
-
-    if (!hasError) {
-        onDismissSuccessDialog(true)
-    }
-}
-
-//@Preview
-//@Composable
-//private fun preview() {
-//    MainScreen()
-//}
