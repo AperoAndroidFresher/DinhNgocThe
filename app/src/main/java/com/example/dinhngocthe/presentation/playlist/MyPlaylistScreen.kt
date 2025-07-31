@@ -1,36 +1,56 @@
 package com.example.dinhngocthe.presentation.playlist
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.model.Song
 import com.example.dinhngocthe.presentation.view.MenuSongDropDown
 
 @Composable
 fun MyPlaylistScreen(
-    innerPadding: PaddingValues,
-    viewModel: PlaylistViewModel = viewModel()
+    innerPadding: PaddingValues
 ) {
+    val context = LocalContext.current.applicationContext as Application
+    val viewModel: PlaylistViewModel = viewModel(
+        factory = remember { PlaylistViewModel.PlaylistViewModelFactory(context) }
+    )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val icon = if (state.isListMode) R.drawable.ic_grid_mode else R.drawable.ic_list_mode
 
@@ -133,8 +153,11 @@ fun ListSongs(
         items(songs.size) { index ->
             Box(modifier = Modifier.fillMaxWidth()) {
                 Row {
-                    Image(
-                        painter = painterResource(songs[index].coverArt),
+                    AsyncImage(
+                        model = ImageRequest.Builder(context = LocalContext.current)
+                            .data(songs[index].coverArt)
+                            .size(200)
+                            .build(),
                         contentDescription = "Cover art",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -219,8 +242,11 @@ fun GridSongs(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier.padding(horizontal = 30.dp)) {
-                    Image(
-                        painter = painterResource(songs[index].coverArt),
+                    AsyncImage(
+                        model = ImageRequest.Builder(context = LocalContext.current)
+                            .data(songs[index].coverArt)
+                            .size(450)
+                            .build(),
                         contentDescription = "Cover art",
                         modifier = Modifier
                             .clip(RoundedCornerShape(7.dp))
@@ -258,12 +284,18 @@ fun GridSongs(
                 Text(
                     text = songs[index].name,
                     color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 18.sp)
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 18.sp),
+                    modifier = Modifier.padding(horizontal = 30.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = songs[index].singers,
                     color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 30.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = formatDuration(songs[index].duration),
