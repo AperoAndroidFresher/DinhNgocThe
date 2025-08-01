@@ -8,7 +8,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.view.HomeScreen
-import com.example.dinhngocthe.presentation.view.LibraryScreen
+import com.example.dinhngocthe.presentation.library.LibraryScreen
 import com.example.dinhngocthe.presentation.login.LoginScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
 import com.example.dinhngocthe.presentation.profile.ProfileScreen

@@ -99,7 +99,7 @@ fun Header(onClick: () -> Unit, iconButtonChangeMode: Int) {
     ) {
         Text(
             "My Playlist",
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.Center)
         )

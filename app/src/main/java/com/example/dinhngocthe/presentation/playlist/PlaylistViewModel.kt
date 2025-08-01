@@ -79,7 +79,6 @@ class PlaylistViewModel(private val context: Application) : ViewModel() {
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                 )
 
-                // Lấy ảnh từ metadata của bài hát
                 val embeddedCoverUri: Uri? = try {
                     val mmr = MediaMetadataRetriever()
                     mmr.setDataSource(context, contentUri)
