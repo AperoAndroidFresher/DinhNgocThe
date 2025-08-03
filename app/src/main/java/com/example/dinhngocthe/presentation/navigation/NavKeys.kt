@@ -12,7 +12,7 @@ sealed interface Destination : NavKey {
     data object SignUpRoute: Destination
 
     @Serializable
-    data object MyPlaylistRoute: Destination
+    data object PlaylistRoute: Destination
 
     @Serializable
     data object HomeRoute: Destination

@@ -1,11 +1,9 @@
 package com.example.dinhngocthe.presentation.library
 
 import android.content.Intent
+import com.example.dinhngocthe.model.Song
 
 sealed interface LibraryIntent {
-    data object ToggleLocalButton : LibraryIntent
-    data object ToggleRemoteButton : LibraryIntent
-    data class ShowMenu(val index: Int) : LibraryIntent
-    data object DismissMenu : LibraryIntent
-    data object AddToPlaylist : LibraryIntent
+    data class AddToPlaylist(val playlistIndex: Int, val song: Song) : LibraryIntent
+    data object NavigateToPlaylist : LibraryIntent
 }

@@ -2,6 +2,9 @@ package com.example.dinhngocthe.presentation.library
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,40 +36,63 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
+import com.example.dinhngocthe.presentation.view.ChoosePlaylistDialog
 import com.example.dinhngocthe.presentation.view.LibraryDropDownMenu
-import com.example.dinhngocthe.presentation.view.MenuSongDropDown
 
 @Composable
 fun LibraryScreen(
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    navigateToPlaylist: () -> Unit
 ) {
     val context = LocalContext.current.applicationContext as Application
     val viewModel: LibraryViewModel = viewModel(
         factory = remember { LibraryViewModel.LibraryViewModelFactory(context) }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    RequestAudioPermissionIfNeeded(
+        onPermissionGranted = {
+            viewModel.loadLocalSongs()
+        }
+    )
     //Log.d("LibraryScreen", state.localSongs.size.toString())
 
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when(event) {
+                LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
+            }
+        }
+    }
+
     //Set color for 2 button switch mode
+    var displayMode by remember { mutableStateOf("local") }
     lateinit var localColor: Pair<Color, Color>
     lateinit var remoteColor: Pair<Color, Color>
-    if (state.displayMode == "local") {
+    if (displayMode == "local") {
         localColor = MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
         remoteColor = MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
     } else {
         remoteColor = MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
         localColor = MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
     }
+
+    var expandedDropDownMenuIndex by remember { mutableStateOf(-1) }
+    var showChoosePlaylist by remember { mutableStateOf(false) }
+    var selectedSong by remember { mutableStateOf(-1) }
 
     Column(
         modifier = Modifier
@@ -78,21 +105,40 @@ fun LibraryScreen(
     ) {
         HeaderLibrary(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onLocalClick = { viewModel.processIntent(LibraryIntent.ToggleLocalButton) },
-            onRemoteClick = { viewModel.processIntent(LibraryIntent.ToggleRemoteButton) },
+            onLocalClick = { displayMode = "local" },
+            onRemoteClick = { displayMode = "remote" },
             localColor = localColor,
             remoteColor = remoteColor
         )
         Spacer(Modifier.size(25.dp))
         MainLibrary(
-            displayMode = state.displayMode,
+            displayMode = displayMode,
             localSongs = state.localSongs,
             remoteSongs = state.remoteSongs,
-            expandedIndex = state.menuExpandedIndex,
-            onShowMenu = { viewModel.processIntent(LibraryIntent.ShowMenu(it)) },
-            onDismissMenu = { viewModel.processIntent(LibraryIntent.DismissMenu) },
-            addToPlaylist = { viewModel.processIntent(LibraryIntent.AddToPlaylist) }
+            expandedIndex = expandedDropDownMenuIndex,
+            onShowMenu = { expandedDropDownMenuIndex = it },
+            onDismissMenu = { expandedDropDownMenuIndex = -1 },
+            addToPlaylist = {
+                showChoosePlaylist = true
+                selectedSong = it
+            }
         )
+        if (showChoosePlaylist) {
+            ChoosePlaylistDialog(
+                playlists = state.playlists,
+                onDismiss = { showChoosePlaylist = false },
+                onSelectPlaylist = {
+                    val song = state.localSongs[selectedSong]
+                    Log.d("Library Screen", song.name + it)
+                    viewModel.processIntent(LibraryIntent.AddToPlaylist(it, song))
+                    showChoosePlaylist = false
+                },
+                navigateToPlaylist = {
+                    showChoosePlaylist = false
+                    viewModel.processIntent(LibraryIntent.NavigateToPlaylist)
+                }
+            )
+        }
     }
 }
 
@@ -254,10 +300,8 @@ private fun formatDuration(durationInMillis: Long): String {
     return String.format("%d:%02d", minutes, seconds)
 }
 
-
-
-@Preview
-@Composable
-private fun PreviewLibrary() {
-    LibraryScreen(PaddingValues(0.dp))
-}
+//@Preview
+//@Composable
+//private fun PreviewLibrary() {
+//    LibraryScreen(PaddingValues(0.dp))
+//}

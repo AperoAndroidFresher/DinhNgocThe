@@ -1,9 +1,7 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.model.Playlist
 
 data class PlaylistState(
-    val songs: List<Song> = emptyList(),
-    val isListMode: Boolean = true,
-    val expandedMenuIndex: Int = -1
+    val playlists: List<Playlist> = listOf<Playlist>()
 )

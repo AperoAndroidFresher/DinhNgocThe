@@ -19,7 +19,7 @@ import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.theme.AppFonts
 
 @Composable
-fun MenuSongDropDown(
+fun SongDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onRemove: () -> Unit,
@@ -83,5 +83,5 @@ fun MenuSongDropDown(
 @Preview
 @Composable
 private fun preview() {
-    MenuSongDropDown(true, {true}, {}, {})
+    SongDropDownMenu(true, {true}, {}, {})
 }

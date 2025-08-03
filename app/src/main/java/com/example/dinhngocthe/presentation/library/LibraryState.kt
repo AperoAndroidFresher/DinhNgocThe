@@ -1,12 +1,13 @@
 package com.example.dinhngocthe.presentation.library
 
+import com.example.dinhngocthe.model.Playlist
+import com.example.dinhngocthe.model.Playlists
 import com.example.dinhngocthe.model.Song
 
 data class LibraryState(
-    val displayMode: String = "local",
     val localSongs: List<Song> = listOf<Song>(),
     val remoteSongs: List<Song> = listOf<Song>(),
-    val menuExpandedIndex: Int = -1,
+    val playlists: List<Playlist> = listOf<Playlist>(),
     val isLoading: Boolean = false,
     val error: String = ""
 )

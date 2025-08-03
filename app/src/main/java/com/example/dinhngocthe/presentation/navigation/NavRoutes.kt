@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.presentation.view.HomeScreen
+import com.example.dinhngocthe.home.HomeScreen
 import com.example.dinhngocthe.presentation.library.LibraryScreen
 import com.example.dinhngocthe.presentation.login.LoginScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
@@ -24,7 +24,7 @@ fun NavRoutes(
     val items = listOf<BottomNavBarItem>(
         BottomNavBarItem(0, "Home", R.drawable.ic_home, Destination.HomeRoute),
         BottomNavBarItem(1, "Library", R.drawable.ic_library, Destination.LibraryRoute),
-        BottomNavBarItem(2, "Playlist", R.drawable.ic_playlist, Destination.MyPlaylistRoute),
+        BottomNavBarItem(2, "Playlist", R.drawable.ic_playlist, Destination.PlaylistRoute),
     )
 
     Scaffold(
@@ -43,7 +43,6 @@ fun NavRoutes(
             }
         }
     ) { innerPadding ->
-
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
@@ -86,11 +85,15 @@ fun NavRoutes(
 
                 entry<Destination.LibraryRoute> {
                     LibraryScreen(
-                        innerPadding = innerPadding
+                        innerPadding = innerPadding,
+                        navigateToPlaylist = {
+                            backStack.clear()
+                            backStack.add(Destination.PlaylistRoute)
+                        }
                     )
                 }
 
-                entry<Destination.MyPlaylistRoute> {
+                entry<Destination.PlaylistRoute> {
                     MyPlaylistScreen(innerPadding = innerPadding)
                 }
             }
