@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.login
 
+import android.app.Application
 import android.widget.Toast
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
@@ -25,6 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dinhngocthe.model.Users
+import com.example.dinhngocthe.presentation.library.LibraryViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.InputField
 import kotlinx.coroutines.flow.collectLatest
@@ -42,12 +46,14 @@ import kotlinx.coroutines.flow.collectLatest
 fun LoginScreen(
     innerPadding: PaddingValues,
     onSignUp: () -> Unit,
-    loginSuccess: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    loginSuccess: () -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val trailingIcon = if (state.passwordVisible) R.drawable.ic_show else R.drawable.ic_hidden
     val context = LocalContext.current
+    val app = LocalContext.current.applicationContext as Application
+    val viewModel: LoginViewModel = viewModel(
+        factory = remember { LoginViewModel.LoginViewModelFactory(app) }
+    )
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.event.collectLatest { event ->
@@ -58,6 +64,12 @@ fun LoginScreen(
             }
         }
     }
+
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var rememberMe by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    val trailingIcon = if (passwordVisible) R.drawable.ic_show else R.drawable.ic_hidden
 
     Column(
         modifier = Modifier
@@ -70,16 +82,16 @@ fun LoginScreen(
         Spacer(Modifier.size(50.dp))
 
         Main(
-            username = state.username,
-            onUserNameChange = { viewModel.processIntent(LoginIntent.UsernameChanged(it)) },
-            password = state.password,
-            onPassWordChange = { viewModel.processIntent(LoginIntent.PasswordChanged(it)) },
-            checked = state.rememberMe,
-            onCheckedChange = { viewModel.processIntent(LoginIntent.RememberMeChecked(it)) },
-            passwordVisible = state.passwordVisible,
-            onClickTrailingIcon = { viewModel.processIntent(LoginIntent.TogglePasswordVisible) },
-            trailingIcon,
-            onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked) }
+            username = username,
+            onUserNameChange = { username = it },
+            password = password,
+            onPassWordChange = { password = it },
+            checked = rememberMe,
+            onCheckedChange = { rememberMe = it},
+            passwordVisible = passwordVisible,
+            onClickTrailingIcon = { passwordVisible = !passwordVisible },
+            trailingIcon =  trailingIcon,
+            onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked(username, password)) }
         )
 
         Footer(onSignUp = {viewModel.processIntent(LoginIntent.NavigateToSignUp)})

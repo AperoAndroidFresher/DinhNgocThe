@@ -1,6 +1,9 @@
 package com.example.dinhngocthe.presentation.profile
 
+import android.app.Application
+import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,23 +24,30 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.dinhngocthe.presentation.login.LoginViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.InputField
 import com.example.dinhngocthe.presentation.view.SuccessDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.tan
 
 @Composable
 fun ProfileScreen(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
-    innerPadding: PaddingValues,
-    viewModel: ProfileViewModel = viewModel()
+    innerPadding: PaddingValues
 ) {
+    val tag = "ProfileScreen"
+    val app = LocalContext.current.applicationContext as Application
+    val viewModel: ProfileViewModel = viewModel(
+        factory = remember { ProfileViewModel.ProfileViewModelFactory(app) }
+    )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -49,13 +59,26 @@ fun ProfileScreen(
             }
         }
     }
-
     var icChangeMode = if (isDarkTheme) R.drawable.ic_dark_mode else R.drawable.ic_light_mode
 
+
+    val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        viewModel.processIntent(ProfileIntent.AvatarChanged(uri))
+        uri?.let {
+            // Xin quyền truy cập lâu dài
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: SecurityException) {
+                Log.e("Profile", "URI permission error", e)
+            }
+
+            viewModel.processIntent(ProfileIntent.AvatarChanged(it))
+        }
     }
 
     Column(
@@ -67,6 +90,7 @@ fun ProfileScreen(
                 bottom = innerPadding.calculateBottomPadding()
             )
     ) {
+        Log.d(tag, state.avatarUri.toString())
         Header(
             onEdit = { viewModel.processIntent(ProfileIntent.ToggleEditMode) },
             showEditButton = !state.isEditing,
@@ -205,6 +229,7 @@ fun ColumnScope.Header(
                     .data(avatarUri)
                     .size(imageSizePx)
                     .crossfade(true)
+                    .allowHardware(false)
                     .build(),
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,
@@ -212,7 +237,8 @@ fun ColumnScope.Header(
                     .align(Alignment.TopCenter)
                     .size(150.dp)
                     .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                error = painterResource(R.drawable.img_avatar)
             )
         } else {
             Image(

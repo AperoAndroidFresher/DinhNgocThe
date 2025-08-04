@@ -1,8 +1,8 @@
 package com.example.dinhngocthe.presentation.library
 
-import com.example.dinhngocthe.model.Playlist
-import com.example.dinhngocthe.model.Playlists
-import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.room.entities.Song
+
 
 data class LibraryState(
     val localSongs: List<Song> = listOf<Song>(),

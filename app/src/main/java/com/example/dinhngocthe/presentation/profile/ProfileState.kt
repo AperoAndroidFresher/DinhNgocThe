@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.presentation.profile
 
 import android.net.Uri
+import androidx.core.net.toUri
 
 data class ProfileState(
     val name: String = "",

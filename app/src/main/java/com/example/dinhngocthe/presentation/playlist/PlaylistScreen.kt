@@ -32,8 +32,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.model.Playlist
-import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.room.entities.Song
+import com.example.dinhngocthe.presentation.login.CurrentUser
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.PlaylistDialog
 import com.example.dinhngocthe.presentation.view.PlaylistDropDownMenu
@@ -79,7 +80,7 @@ fun MyPlaylistScreen(
 
             MainPlaylist(
                 playlists = state.playlists,
-                onSelectPlaylist = { selectedPlaylist = it },
+                onSelectPlaylist = { selectedPlaylist = it },           /////////////////////////////////////////////////////
                 expandedPlaylistDropDownMenuIndex = expandedPlaylistDropDownMenuIndex,
                 showPlaylistDropDownMenu = { expandedPlaylistDropDownMenuIndex = it },
                 onDismissPlaylistDropDownMenu = { expandedPlaylistDropDownMenuIndex = -1 },
@@ -92,12 +93,15 @@ fun MyPlaylistScreen(
 
             if (showAddPlaylistDialog == true) PlaylistDialog(
                 onDismiss = { showAddPlaylistDialog = false },
-                playlistAction =  { viewModel.processIntent(PlaylistIntent.AddPlaylist(Playlist(name = it))) }
+                playlistAction =  { viewModel.processIntent(PlaylistIntent.AddPlaylist(Playlist(
+                    name = it,
+                    userId = CurrentUser.id
+                ))) }
             )
 
             if (showRenamePlaylistDialog == true) PlaylistDialog(
                 onDismiss = { showRenamePlaylistDialog = false },
-                playlistAction =  { viewModel.processIntent(PlaylistIntent.RenamePlaylist(index = renameIndex, name = it)) },
+                playlistAction =  { viewModel.processIntent(PlaylistIntent.RenamePlaylist(id = state.playlists[renameIndex].id, name = it)) },
                 title = "Rename Playlist",
                 actionName = "Update"
             )
@@ -131,7 +135,7 @@ fun MyPlaylistScreen(
                     }
                 }
             }
-        } else {
+        } else { //When choose playlist
             HeaderListSongs(
                 title = state.playlists[selectedPlaylist].name,
                 onChangeDisplayMode = { isListMode = !isListMode },
@@ -141,7 +145,7 @@ fun MyPlaylistScreen(
 
             if (isListMode) {
                 ListSongs(
-                    songs = state.playlists[selectedPlaylist].listSongs,
+                    songs = state.songs,
                     expandedIndex = expandedListSongsDropDownMenuIndex,
                     onShowMenu = { expandedListSongsDropDownMenuIndex = it },
                     onDismissMenu = { expandedListSongsDropDownMenuIndex = -1 },
@@ -149,7 +153,7 @@ fun MyPlaylistScreen(
                 )
             } else {
                 GridSongs(
-                    songs = state.playlists[selectedPlaylist].listSongs,
+                    songs = state.songs,
                     expandedIndex =  expandedListSongsDropDownMenuIndex,
                     onShowMenu = { expandedListSongsDropDownMenuIndex = selectedPlaylist },
                     onDismissMenu = { expandedListSongsDropDownMenuIndex = -1 },
@@ -197,7 +201,7 @@ fun MainPlaylist(
     expandedPlaylistDropDownMenuIndex: Int,
     showPlaylistDropDownMenu: (Int) -> Unit,
     onDismissPlaylistDropDownMenu: () -> Unit,
-    onRemovePlaylist: (Int) -> Unit,
+    onRemovePlaylist: (Playlist) -> Unit,
     showRenameDialog: (Int) -> Unit
 ) {
     LazyColumn(
@@ -262,7 +266,7 @@ fun MainPlaylist(
                         PlaylistDropDownMenu(
                             expanded = true,
                             onDismissRequest = onDismissPlaylistDropDownMenu,
-                            onRemove = { onRemovePlaylist(index) },
+                            onRemove = { onRemovePlaylist(playlists[index]) },
                             onRename = { showRenameDialog(index) }
                         )
                     }
@@ -375,7 +379,7 @@ fun ListSongs(
                             style = MaterialTheme.typography.labelSmall
                         )
                         Text(
-                            songs[index].singers,
+                            songs[index].singer,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp)
                         )
@@ -489,7 +493,7 @@ fun GridSongs(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = songs[index].singers,
+                    text = songs[index].singer,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(horizontal = 30.dp),

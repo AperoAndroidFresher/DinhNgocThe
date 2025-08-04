@@ -2,8 +2,6 @@ package com.example.dinhngocthe.presentation.library
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.pm.PackageManager
-import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -48,10 +47,11 @@ import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.data.room.entities.Song
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.view.ChoosePlaylistDialog
 import com.example.dinhngocthe.presentation.view.LibraryDropDownMenu
+import kotlinx.coroutines.launch
 
 @Composable
 fun LibraryScreen(
@@ -63,12 +63,12 @@ fun LibraryScreen(
         factory = remember { LibraryViewModel.LibraryViewModelFactory(context) }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     RequestAudioPermissionIfNeeded(
         onPermissionGranted = {
             viewModel.loadLocalSongs()
         }
     )
-    //Log.d("LibraryScreen", state.localSongs.size.toString())
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
@@ -129,8 +129,8 @@ fun LibraryScreen(
                 onDismiss = { showChoosePlaylist = false },
                 onSelectPlaylist = {
                     val song = state.localSongs[selectedSong]
-                    Log.d("Library Screen", song.name + it)
-                    viewModel.processIntent(LibraryIntent.AddToPlaylist(it, song))
+                    //Log.d("Library Screen", song.name + it)
+                    viewModel.processIntent(LibraryIntent.AddToPlaylist(state.playlists[it].id, song.id))
                     showChoosePlaylist = false
                 },
                 navigateToPlaylist = {
@@ -246,7 +246,7 @@ fun MainLibrary(
                                 style = MaterialTheme.typography.labelSmall
                             )
                             Text(
-                                songs[index].singers,
+                                songs[index].singer,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp)
                             )

@@ -9,8 +9,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.dinhngocthe.data.repository.PlaylistRepository
+import com.example.dinhngocthe.data.repository.SongRepository
+import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.room.entities.Song
 import com.example.dinhngocthe.model.Playlists
-import com.example.dinhngocthe.model.Song
+import com.example.dinhngocthe.presentation.login.CurrentUser
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,9 +23,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class LibraryViewModel(private val context: Application) : ViewModel() {
+    val tag = "LibraryViewModel"
+    private val songRepository = SongRepository(context)
+    private val playlistRepository = PlaylistRepository(context)
     private val _state = MutableStateFlow<LibraryState>(LibraryState())
     val state = _state.asStateFlow()
 
@@ -28,31 +37,25 @@ class LibraryViewModel(private val context: Application) : ViewModel() {
     val event: SharedFlow<LibraryEvent> = _event.asSharedFlow()
 
     init {
-        viewModelScope.launch {
-            loadLocalSongs()
-            Playlists.playlists.collect { newList ->
-                _state.update { it.copy(playlists = newList) }
+        loadLocalSongs()
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistRepository.getAllPlaylists(CurrentUser.id).collect { playlists ->
+                _state.update { it.copy(playlists = playlists) }
             }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            songRepository.getAllSongs().collect { songs ->
+                _state.update { it.copy(localSongs = songs) }
+            }
+            //Log.d(tag, _state.value.localSongs.size.toString())
         }
     }
 
     fun processIntent(intent: LibraryIntent) {
         when(intent) {
-            is LibraryIntent.AddToPlaylist -> {
-                val playlists = Playlists.playlists.value.toMutableList()
-                val playlist = playlists[intent.playlistIndex]
-
-                val alreadyExists = playlist.listSongs.any { it.id == intent.song.id }
-                if (alreadyExists) return
-
-                val updatedSongs = playlist.listSongs.toMutableList().apply {
-                    add(intent.song)
-                }
-                playlists[intent.playlistIndex] = playlist.copy(
-                    listSongs = updatedSongs,
-                    numberSong = updatedSongs.size
-                )
-                Playlists.playlists.value = playlists
+            is LibraryIntent.AddToPlaylist -> viewModelScope.launch(Dispatchers.IO) {
+                songRepository.addSongToPlaylist(PlaylistSongCrossRef(intent.playlistId, intent.songId))
+                playlistRepository.updateNumberSong(1, intent.playlistId)
             }
 
             LibraryIntent.NavigateToPlaylist -> {
@@ -64,69 +67,76 @@ class LibraryViewModel(private val context: Application) : ViewModel() {
     }
 
     fun loadLocalSongs() {
-        try {
-            _state.update { it.copy(isLoading = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _state.update { it.copy(isLoading = true) }
 
-            val contentResolver = context.contentResolver
-            val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                val contentResolver = context.contentResolver
+                val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
-            val projection = arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DURATION
-            )
-            val selection = MediaStore.Audio.Media.IS_MUSIC
+                val projection = arrayOf(
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.Audio.Media.TITLE,
+                    MediaStore.Audio.Media.ARTIST,
+                    MediaStore.Audio.Media.DURATION
+                )
+                val selection = MediaStore.Audio.Media.IS_MUSIC
 
-            val songs = mutableListOf<Song>()
-            contentResolver.query(uri, projection, selection, null, null)?.use { it ->
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val titleCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val durationCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+                val songs = mutableListOf<Song>()
+                contentResolver.query(uri, projection, selection, null, null)?.use { it ->
+                    val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                    val titleCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                    val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val durationCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
 
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val title = it.getString(titleCol) ?: ""
-                    val artist = it.getString(artistCol) ?: ""
-                    val duration = it.getLong(durationCol)
+                    while (it.moveToNext()) {
+                        val id = it.getLong(idCol)
+                        val title = it.getString(titleCol) ?: ""
+                        val artist = it.getString(artistCol) ?: ""
+                        val duration = it.getLong(durationCol)
 
-                    val contentUri = ContentUris.withAppendedId(
-                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
-                    )
-
-                    // Lấy ảnh từ metadata của bài hát
-                    val embeddedCoverUri: Uri? = try {
-                        val mmr = MediaMetadataRetriever()
-                        mmr.setDataSource(context, contentUri)
-                        mmr.embeddedPicture?.let { bytes ->
-                            val file = File(context.cacheDir, "$id")
-                            file.writeBytes(bytes)
-                            Uri.fromFile(file)
-                        }.also {
-                            mmr.release()
-                        }
-                    } catch (_: Exception) {
-                        null
-                    }
-
-                    songs.add(
-                        Song(
-                            id = id,
-                            name = title.dropLast(4),
-                            singers = artist,
-                            duration = duration,
-                            coverArt = embeddedCoverUri
+                        val contentUri = ContentUris.withAppendedId(
+                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                         )
-                    )
+
+                        val embeddedCoverUri: Uri? = try {
+                            val mmr = MediaMetadataRetriever()
+                            mmr.setDataSource(context, contentUri)
+                            mmr.embeddedPicture?.let { bytes ->
+                                val file = File(context.cacheDir, "$id")
+                                file.writeBytes(bytes)
+                                Uri.fromFile(file)
+                            }.also {
+                                mmr.release()
+                            }
+                        } catch (_: Exception) {
+                            null
+                        }
+
+                        songs.add(
+                            Song(
+                                id = id,
+                                name = title.dropLast(4),
+                                singer = artist,
+                                duration = duration,
+                                coverArt = embeddedCoverUri
+                            )
+                        )
+                    }
+                }
+
+                if (songs.isEmpty()) {
+                    _state.update { it.copy(isLoading = false, error = "Không tìm thấy bài hát nào!") }
+                } else {
+                    songRepository.insertAllSongs(songs)
+                    _state.update { it.copy(isLoading = false, error = "") }
+                }
+            } catch (e: Exception) {
+                Log.e("LibraryViewModel", "Lỗi khi tải danh sách bài hát")
+                _state.update {
+                    it.copy(isLoading = false, error = "Lỗi khi tải danh sách bài hát: $e")
                 }
             }
-            if (songs.isEmpty()) {
-                _state.update { it.copy(isLoading = false, error = "Không tìm thấy bài hát nào!") }
-            } else _state.update { it.copy(localSongs = songs) }
-        } catch (e: Exception) {
-            Log.e("LibraryViewModel", "Lỗi khi tải danh sách bài hát")
-            _state.update { it.copy(isLoading = false, error = "Lỗi khi tải danh sách bài hát: $e") }
         }
     }
 

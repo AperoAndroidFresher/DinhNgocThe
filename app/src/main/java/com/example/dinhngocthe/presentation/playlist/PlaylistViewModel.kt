@@ -4,39 +4,40 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.dinhngocthe.data.repository.PlaylistRepository
 import com.example.dinhngocthe.model.Playlists
+import com.example.dinhngocthe.presentation.login.CurrentUser
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel(private val context: Application) : ViewModel() {
+class PlaylistViewModel(context: Application) : ViewModel() {
+    private val playlistRepository = PlaylistRepository(context)
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            Playlists.playlists.collect { newList ->
-                _state.update { it.copy(playlists = newList) }
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistRepository.getAllPlaylists(CurrentUser.id).collect { playlists ->
+                _state.update { it.copy(playlists = playlists) }
             }
         }
     }
 
     fun processIntent(intent: PlaylistIntent) {
         when (intent) {
-            is PlaylistIntent.AddPlaylist -> {
-                Playlists.playlists.value = Playlists.playlists.value + intent.playlist
+            is PlaylistIntent.AddPlaylist -> viewModelScope.launch(Dispatchers.IO) {
+                playlistRepository.insertPlaylist(intent.playlist)
             }
 
-            is PlaylistIntent.RemovePlaylist -> {
-                Playlists.playlists.value = Playlists.playlists.value - Playlists.playlists.value[intent.index]
+            is PlaylistIntent.RemovePlaylist -> viewModelScope.launch(Dispatchers.IO) {
+                playlistRepository.deletePlaylist(intent.playlist)
             }
 
-            is PlaylistIntent.RenamePlaylist -> {
-                val playlists = Playlists.playlists.value.toMutableList()
-                val playlist = playlists[intent.index]
-                playlists[intent.index] = playlist.copy(name = intent.name)
-                Playlists.playlists.value = playlists
+            is PlaylistIntent.RenamePlaylist -> viewModelScope.launch(Dispatchers.IO) {
+                playlistRepository.renamePlaylist(intent.id, intent.name)
             }
 
             is PlaylistIntent.RemoveSong -> {
@@ -51,6 +52,8 @@ class PlaylistViewModel(private val context: Application) : ViewModel() {
                 )
                 Playlists.playlists.value = playlists
             }
+
+            is PlaylistIntent.loadSongs -> TODO()
         }
     }
 
