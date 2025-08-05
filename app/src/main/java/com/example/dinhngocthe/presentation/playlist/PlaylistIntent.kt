@@ -4,9 +4,9 @@ import com.example.dinhngocthe.data.room.entities.Playlist
 
 
 sealed interface PlaylistIntent {
-    data class AddPlaylist(val playlist: Playlist) : PlaylistIntent
-    data class RemovePlaylist(val playlist: Playlist) : PlaylistIntent
-    data class RenamePlaylist(val id: Long, val name: String) : PlaylistIntent
-    data class RemoveSong(val playlistId: Long, val songId: Long) : PlaylistIntent
-    data object LoadSongs : PlaylistIntent
+    data class InsertPlaylist(val playlist: Playlist) : PlaylistIntent
+    data class DeletePlaylist(val playlist: Playlist) : PlaylistIntent
+    data class RenamePlaylist(val playlistId: Long, val playlistName: String) : PlaylistIntent
+    data class DeleteSongFromPlaylist(val playlistId: Long, val songId: Long) : PlaylistIntent
+    data object LoadData : PlaylistIntent
 }

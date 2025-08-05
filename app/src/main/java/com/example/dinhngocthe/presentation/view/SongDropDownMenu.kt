@@ -22,7 +22,7 @@ import com.example.dinhngocthe.presentation.theme.AppFonts
 fun SongDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onRemove: () -> Unit,
+    onDelete: () -> Unit,
     onShare: () -> Unit
 ) {
     DropdownMenu(
@@ -41,7 +41,7 @@ fun SongDropDownMenu(
                 )
             },
             onClick = {
-                onRemove()
+                onDelete()
                 onDismissRequest()
             },
             leadingIcon = {

@@ -20,12 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.Song
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.view.ChoosePlaylistDialog
 
@@ -72,8 +69,8 @@ fun LibraryScreen(
             MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
     }
 
-    var expandedSongMenuIndex by remember { mutableIntStateOf(-1) }
-    var showChoosePlaylistToAddSong by remember { mutableStateOf(false) }
+    var songMenuIndex by remember { mutableIntStateOf(-1) }
+    var isInsertToPlaylistDialogVisible by remember { mutableStateOf(false) }
     var selectedSongIndex by remember { mutableIntStateOf(-1) }
 
     Column(
@@ -99,27 +96,27 @@ fun LibraryScreen(
             displayMode = songSource,
             localSongs = state.localSongs,
             remoteSongs = state.remoteSongs,
-            expandedIndex = expandedSongMenuIndex,
-            onShowMenu = { expandedSongMenuIndex = it },
-            onDismissMenu = { expandedSongMenuIndex = -1 },
-            addToPlaylist = {
-                showChoosePlaylistToAddSong = true
+            expandedIndex = songMenuIndex,
+            onShowMenu = { songMenuIndex = it },
+            onDismissMenu = { songMenuIndex = -1 },
+            onInsertToPlaylist = {
+                isInsertToPlaylistDialogVisible = true
                 selectedSongIndex = it
             }
         )
 
-        if (showChoosePlaylistToAddSong) {
+        if (isInsertToPlaylistDialogVisible) {
             ChoosePlaylistDialog(
                 playlists = state.playlists,
-                onDismiss = { showChoosePlaylistToAddSong = false },
+                onDismiss = { isInsertToPlaylistDialogVisible = false },
                 onSelectPlaylist = {
                     val song = state.localSongs[selectedSongIndex]
                     //Log.d("Library Screen", song.name + it)
                     viewModel.processIntent(LibraryIntent.AddMusicToPlaylist(state.playlists[it].playlistId, song.songId))
-                    showChoosePlaylistToAddSong = false
+                    isInsertToPlaylistDialogVisible = false
                 },
                 navigateToPlaylist = {
-                    showChoosePlaylistToAddSong = false
+                    isInsertToPlaylistDialogVisible = false
                     viewModel.processIntent(LibraryIntent.NavigateToPlaylist)
                 }
             )

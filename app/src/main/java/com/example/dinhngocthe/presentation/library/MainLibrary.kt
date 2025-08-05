@@ -29,7 +29,7 @@ fun MainLibrary(
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
-    addToPlaylist: (Int) -> Unit
+    onInsertToPlaylist: (Int) -> Unit
 ) {
     val songs = if (displayMode == "local") localSongs else remoteSongs
 
@@ -46,7 +46,7 @@ fun MainLibrary(
                     expandedIndex = expandedIndex,
                     onDismissMenu = onDismissMenu,
                     onShowMenu = onShowMenu,
-                    addToPlaylist = addToPlaylist
+                    addToPlaylist = onInsertToPlaylist
                 )
             }
         }

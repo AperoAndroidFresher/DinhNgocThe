@@ -46,9 +46,7 @@ class LibraryViewModel(context: Application) : ViewModel() {
             }
 
             LibraryIntent.NavigateToPlaylist -> {
-                viewModelScope.launch {
-                    _event.emit(LibraryEvent.NavigateToPlaylist)
-                }
+                handleNavigateToPlaylist()
             }
         }
     }
@@ -91,6 +89,12 @@ class LibraryViewModel(context: Application) : ViewModel() {
             )
             songRepository.addSongToPlaylist(playlistSongCrossRef = playlistSongCrossRef)
             playlistRepository.updatePlaylistSongCount(playlistId = intent.playlistId)
+        }
+    }
+
+    private fun handleNavigateToPlaylist() {
+        viewModelScope.launch {
+            _event.emit(LibraryEvent.NavigateToPlaylist)
         }
     }
 
