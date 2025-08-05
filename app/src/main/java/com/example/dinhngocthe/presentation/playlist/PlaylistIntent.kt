@@ -1,10 +1,12 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import com.example.dinhngocthe.model.Playlist
+import com.example.dinhngocthe.data.room.entities.Playlist
+
 
 sealed interface PlaylistIntent {
     data class AddPlaylist(val playlist: Playlist) : PlaylistIntent
-    data class RemovePlaylist(val index: Int) : PlaylistIntent
-    data class RenamePlaylist(val index: Int, val name: String) : PlaylistIntent
-    data class RemoveSong(val playlistIndex: Int, val songIndex: Int) : PlaylistIntent
+    data class RemovePlaylist(val playlist: Playlist) : PlaylistIntent
+    data class RenamePlaylist(val id: Long, val name: String) : PlaylistIntent
+    data class RemoveSong(val playlistId: Long, val songId: Long) : PlaylistIntent
+    data object LoadSongs : PlaylistIntent
 }

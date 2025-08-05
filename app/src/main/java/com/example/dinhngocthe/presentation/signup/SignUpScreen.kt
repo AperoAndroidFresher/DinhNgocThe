@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.signup
 
+import android.app.Application
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,11 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dinhngocthe.data.room.entities.User
+import com.example.dinhngocthe.presentation.login.LoginViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.InputField
 import kotlinx.coroutines.flow.collectLatest
@@ -21,9 +25,12 @@ import kotlinx.coroutines.flow.collectLatest
 fun SignUpScreen(
     innerPadding: PaddingValues,
     signUpSuccess: () -> Unit,
-    onBack: () -> Unit,
-    viewModel: SignUpViewModel = viewModel()
+    onBack: () -> Unit
 ) {
+    val app = LocalContext.current.applicationContext as Application
+    val viewModel: SignUpViewModel = viewModel(
+        factory = remember { SignUpViewModel.SignUpViewModelFactory(app) }
+    )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -35,10 +42,14 @@ fun SignUpScreen(
         }
     }
 
-    val passwordIcon =
-        if (state.passwordVisible) R.drawable.ic_hidden else R.drawable.ic_show
-    val confirmIcon =
-        if (state.confirmPasswordVisible) R.drawable.ic_hidden else R.drawable.ic_show
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+    val passwordIcon = if (passwordVisible) R.drawable.ic_hidden else R.drawable.ic_show
+    val confirmIcon = if (confirmPasswordVisible) R.drawable.ic_hidden else R.drawable.ic_show
 
     Column(
         modifier = Modifier
@@ -54,26 +65,26 @@ fun SignUpScreen(
         Spacer(Modifier.size(50.dp))
 
         MainSignUp(
-            username = state.username,
-            onUsernameChange = { viewModel.processIntent(SignUpIntent.UsernameChanged(it)) },
-            password = state.password,
-            onPasswordChange = { viewModel.processIntent(SignUpIntent.PasswordChanged(it)) },
-            confirmPassword = state.confirmPassword,
-            onConfirmPasswordChange = { viewModel.processIntent(SignUpIntent.ConfirmPasswordChanged(it)) },
-            passwordVisible = state.passwordVisible,
-            confirmPasswordVisible = state.confirmPasswordVisible,
-            onTogglePassword = { viewModel.processIntent(SignUpIntent.TogglePasswordVisible) },
-            onToggleConfirmPassword = { viewModel.processIntent(SignUpIntent.ToggleConfirmPasswordVisible) },
+            username = username,
+            onUsernameChange = { username = it },
+            password = password,
+            onPasswordChange = { password = it },
+            confirmPassword = confirmPassword,
+            onConfirmPasswordChange = { confirmPassword = it },
+            passwordVisible = passwordVisible,
+            confirmPasswordVisible = confirmPasswordVisible,
+            onTogglePassword = { passwordVisible = !passwordVisible },
+            onToggleConfirmPassword = { confirmPasswordVisible = !confirmPasswordVisible },
             passwordTrailingIcon = passwordIcon,
             confirmPasswordTrailingIcon = confirmIcon,
-            email = state.email,
-            onEmailChange = { viewModel.processIntent(SignUpIntent.EmailChanged(it)) },
+            email = email,
+            onEmailChange = { email = it },
             usernameError = state.usernameError,
             passwordError = state.passwordError,
             confirmPasswordError = state.confirmPasswordError,
             emailError = state.emailError,
             isLoading = state.isLoading,
-            onSignUpClick = { viewModel.processIntent(SignUpIntent.SignUpClicked) }
+            onSignUpClick = { viewModel.processIntent(SignUpIntent.SignUpClicked(username, password, confirmPassword, email)) }
         )
     }
 }

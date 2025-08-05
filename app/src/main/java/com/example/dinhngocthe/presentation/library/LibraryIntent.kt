@@ -1,9 +1,7 @@
 package com.example.dinhngocthe.presentation.library
 
-import android.content.Intent
-import com.example.dinhngocthe.model.Song
-
 sealed interface LibraryIntent {
-    data class AddToPlaylist(val playlistIndex: Int, val song: Song) : LibraryIntent
+    data class AddMusicToPlaylist(val playlistId: Long, val songId: Long) : LibraryIntent
     data object NavigateToPlaylist : LibraryIntent
+    data object LoadData : LibraryIntent
 }

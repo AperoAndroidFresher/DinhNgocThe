@@ -1,19 +1,24 @@
 package com.example.dinhngocthe.presentation.login
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.model.Users
+import com.example.dinhngocthe.data.repository.UserRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(context: Application) : ViewModel() {
+    val tag = "LoginViewModel"
+    private val userRepository = UserRepository(context)
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 
@@ -22,41 +27,38 @@ class LoginViewModel : ViewModel() {
 
     fun processIntent(intent: LoginIntent) {
         when (intent) {
-            is LoginIntent.UsernameChanged -> {
-                _state.update { it.copy(username = intent.username, error = "") }
-            }
-
-            is LoginIntent.PasswordChanged -> {
-                _state.update { it.copy(password = intent.password, error = "") }
-            }
-
-            is LoginIntent.TogglePasswordVisible -> {
-                _state.update { it.copy(passwordVisible = !it.passwordVisible) }
-            }
-
-            is LoginIntent.RememberMeChecked -> {
-                _state.update { it.copy(rememberMe = intent.checked) }
-            }
-
-            is LoginIntent.LoginClicked -> login()
+            is LoginIntent.LoginClicked -> login(intent.username, intent.password)
 
             is LoginIntent.NavigateToSignUp -> viewModelScope.launch { _event.emit(LoginEvent.NavigateToSignUp) }
         }
     }
 
-    private fun login() {
+    fun login(
+        username: String,
+        password: String
+    ) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = "") }
-            val userFound = Users.users.find { it.userName == _state.value.username && it.passWord == _state.value.password }
-            if (userFound != null) {
-                _event.emit(LoginEvent.NavigateToHome)
-            } else {
-                _state.update { it.copy(error = "Sai tên đăng nhập hoặc mật khẩu") }
-                _event.emit(LoginEvent.ShowError(_state.value.error))
+            _state.update { it.copy(isLoading = true) }
+            val user = withContext(Dispatchers.IO) {
+                userRepository.getUserByUsernameAndPassword(username, password)
             }
-            _state.update { it.copy(isLoading = false ) }
+            if (user == null) {
+                _event.emit(LoginEvent.ShowError("Sai tên đăng nhập hoặc mật khẩu!"))
+            } else {
+                CurrentUser.id = user.userId
+                _event.emit(LoginEvent.NavigateToHome)
+            }
+            _state.update { it.copy(isLoading = false) }
         }
     }
 
-
+    class LoginViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return LoginViewModel(context) as T
+            }
+            throw IllegalArgumentException("Unable to construct LoginViewModelFactory")
+        }
+    }
 }

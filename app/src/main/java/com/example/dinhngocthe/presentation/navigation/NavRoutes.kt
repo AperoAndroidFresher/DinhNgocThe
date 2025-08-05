@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.home.HomeScreen
+import com.example.dinhngocthe.presentation.home.HomeScreen
 import com.example.dinhngocthe.presentation.library.LibraryScreen
 import com.example.dinhngocthe.presentation.login.LoginScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
@@ -69,7 +69,7 @@ fun NavRoutes(
                 entry<Destination.HomeRoute> {
                     HomeScreen(
                         innerPadding = innerPadding,
-                        goProfile = {
+                        navigateToProfileScreen = {
                             backStack.add(Destination.ProfileRoute)
                         }
                     )

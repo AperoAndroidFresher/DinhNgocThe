@@ -1,14 +1,6 @@
 package com.example.dinhngocthe.presentation.signup
 
 data class SignUpState(
-    val username: String = "",
-    val password: String = "",
-    val confirmPassword: String = "",
-    val email: String = "",
-
-    val passwordVisible: Boolean = false,
-    val confirmPasswordVisible: Boolean = false,
-
     val isLoading: Boolean = false,
 
     val usernameError: String? = null,

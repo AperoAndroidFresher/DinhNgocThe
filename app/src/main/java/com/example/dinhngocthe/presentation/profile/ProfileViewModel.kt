@@ -1,22 +1,51 @@
 package com.example.dinhngocthe.presentation.profile
 
+import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.dinhngocthe.data.repository.UserRepository
+import com.example.dinhngocthe.presentation.login.CurrentUser
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(
+    context: Application
+) : ViewModel() {
+    val tag = "ProfileViewModel"
+    private val userRepository = UserRepository(context)
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     private val _event = MutableSharedFlow<ProfileEvent>()
     val event: SharedFlow<ProfileEvent> = _event.asSharedFlow()
 
+    init {
+        loadData()
+    }
+
+    private fun loadData() {
+        viewModelScope.launch {
+            val user = withContext(Dispatchers.IO) {
+                userRepository.getUserByUserId(CurrentUser.id)
+            }
+            _state.update { it.copy(
+                name = user.fullName,
+                phoneNumber = user.phoneNumber,
+                university = user.universityName,
+                avatarUri = user.avatarUri,
+                description = user.description
+            ) }
+            Log.d(tag, user.avatarUri.toString())
+        }
+    }
+
     fun processIntent(intent: ProfileIntent) {
         when (intent) {
-            is ProfileIntent.ToggleEditMode -> {
-                _state.update { it.copy(isEditing = !it.isEditing) }
-            }
+            is ProfileIntent.ToggleEditMode -> _state.update { it.copy(isEditing = !it.isEditing) }
             is ProfileIntent.ChangeTheme -> {
                 viewModelScope.launch { _event.emit(ProfileEvent.ChangeTheme) }
             }
@@ -72,7 +101,30 @@ class ProfileViewModel : ViewModel() {
         }
 
         if (!hasError) {
-            viewModelScope.launch { _event.emit(ProfileEvent.ShowSuccessDialog) }
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    userRepository.updateProfile(
+                        fullName = _state.value.name,
+                        phoneNumber = _state.value.phoneNumber,
+                        universityName = _state.value.university,
+                        description = _state.value.description,
+                        avatarUri = _state.value.avatarUri.toString(),
+                        userId = CurrentUser.id
+                    )
+                }
+                _event.emit(ProfileEvent.ShowSuccessDialog)
+                _state.update { it.copy(isEditing = false) }
+            }
+        }
+    }
+
+    class ProfileViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return ProfileViewModel(context) as T
+            }
+            throw IllegalArgumentException("Unable to construct ProfileViewModelFactory")
         }
     }
 }

@@ -1,9 +1,15 @@
 package com.example.dinhngocthe.presentation.signup
 
+import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.model.User
-import com.example.dinhngocthe.model.Users
+import com.example.dinhngocthe.data.room.LocalDatabase
+import com.example.dinhngocthe.data.room.entities.User
+import com.example.dinhngocthe.data.repository.UserRepository
+import com.example.dinhngocthe.presentation.login.LoginViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -11,7 +17,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SignUpViewModel : ViewModel() {
+class SignUpViewModel(context: Application) : ViewModel() {
+    val tag = "SignUpViewModel"
+    private val userRepository = UserRepository(context)
 
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.asStateFlow()
@@ -21,38 +29,38 @@ class SignUpViewModel : ViewModel() {
 
     fun processIntent(intent: SignUpIntent) {
         when (intent) {
-            is SignUpIntent.UsernameChanged ->
-                _state.update { it.copy(username = intent.username, usernameError = null) }
+            is SignUpIntent.SignUpClicked -> signUp(intent.username, intent.password, intent.confirmPassword, intent.email)
 
-            is SignUpIntent.PasswordChanged ->
-                _state.update { it.copy(password = intent.password, passwordError = null) }
-
-            is SignUpIntent.ConfirmPasswordChanged ->
-                _state.update { it.copy(confirmPassword = intent.confirmPassword, confirmPasswordError = null) }
-
-            is SignUpIntent.EmailChanged ->
-                _state.update { it.copy(email = intent.email, emailError = null) }
-
-            SignUpIntent.TogglePasswordVisible ->
-                _state.update { it.copy(passwordVisible = !it.passwordVisible) }
-
-            SignUpIntent.ToggleConfirmPasswordVisible ->
-                _state.update { it.copy(confirmPasswordVisible = !it.confirmPasswordVisible) }
-
-            SignUpIntent.SignUpClicked -> signUp()
-
-            SignUpIntent.BackToLogin ->
-                viewModelScope.launch { _event.emit(SignUpEvent.BackToLogin) }
+            SignUpIntent.BackToLogin -> viewModelScope.launch { _event.emit(SignUpEvent.BackToLogin) }
         }
     }
 
-    private fun signUp() = viewModelScope.launch {
+    private fun signUp(username: String, password: String, confirmPassword: String, email: String) = viewModelScope.launch(Dispatchers.IO) {
         _state.update { it.copy(isLoading = true) }
+        val hasError = checkInputFormat(username, password, confirmPassword, email)
+        if (!hasError) {
+            val user = User(
+                username = username,
+                password = password,
+                email = email
+            )
+            userRepository.insertUser(user)
+            _event.emit(SignUpEvent.BackToLogin)
+            Log.d(tag, "signup success!")
+        }
+        _state.update { it.copy(isLoading = false) }
+    }
 
-        val username = state.value.username.trim()
-        val password = state.value.password.trim()
-        val confirm  = state.value.confirmPassword.trim()
-        val email    = state.value.email.trim()
+    private fun checkInputFormat(
+        username: String,
+        password: String,
+        confirmPassword: String,
+        email: String
+    ) : Boolean {
+        val username = username.trim()
+        val password = password.trim()
+        val confirm  = confirmPassword.trim()
+        val email    = email.trim()
 
         val userNameRegex = Regex("^[a-z0-9]+\$", RegexOption.IGNORE_CASE)
         val passwordRegex = Regex("^[a-zA-Z0-9]+\$")
@@ -97,11 +105,16 @@ class SignUpViewModel : ViewModel() {
 
         val hasError = uErr != null || pErr != null || cErr != null || eErr != null
 
-        if (!hasError) {
-            Users.users.add(User(username, password, email)) // fake DB
-            _event.emit(SignUpEvent.SignUpSuccess)
-        }
+        return hasError
+    }
 
-        _state.update { it.copy(isLoading = false) }
+    class SignUpViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(SignUpViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return SignUpViewModel(context) as T
+            }
+            throw IllegalArgumentException("Unable to construct SignUpViewModelFactory")
+        }
     }
 }

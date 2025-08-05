@@ -57,10 +57,12 @@ fun SuccessDialog(onDismiss: () -> Unit, message: String) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    message,
-                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.primary)
-                )
+                if (message != "") {
+                    Text(
+                        message,
+                        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.primary)
+                    )
+                }
             }
         }
     }
