@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -133,7 +131,7 @@ fun ListPlaylists(
                 Row {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
-                            .data(playlists[index].coverArt)
+                            .data(playlists[index].coverArtUri)
                             .size(200)
                             .build(),
                         contentDescription = "Cover art",
@@ -150,12 +148,12 @@ fun ListPlaylists(
                             .padding(top = 2.dp)
                     ) {
                         Text(
-                            playlists[index].name,
+                            playlists[index].playlistName,
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelSmall
                         )
                         Text(
-                            playlists[index].numberSong.toString() + " songs",
+                            playlists[index].numberOfSongs.toString() + " songs",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp)
                         )

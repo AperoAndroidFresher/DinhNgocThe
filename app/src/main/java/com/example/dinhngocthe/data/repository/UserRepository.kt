@@ -2,17 +2,18 @@ package com.example.dinhngocthe.data.repository
 
 import android.app.Application
 import com.example.dinhngocthe.data.room.LocalDatabase
+import com.example.dinhngocthe.data.room.dao.UserDao
 import com.example.dinhngocthe.data.room.entities.User
 
 class UserRepository(context: Application) {
-    private val localDatabase = LocalDatabase.Companion.getInstance(context)
-    private val userDao = localDatabase.userDao()
+    private val localDatabase: LocalDatabase = LocalDatabase.Companion.getInstance(context)
+    private val userDao: UserDao = localDatabase.userDao()
     suspend fun getUserByUsernameAndPassword(username: String, password: String) : User? {
         return userDao.getUserByUsernameAndPassword(username, password)
     }
 
-    suspend fun getUserById(id: Long): User {
-        return userDao.getUserById(id)
+    suspend fun getUserByUserId(userId: Long): User {
+        return userDao.getUserByUserId(userId)
     }
 
     suspend fun insertUser(user: User) {
@@ -20,13 +21,13 @@ class UserRepository(context: Application) {
     }
 
     suspend fun updateProfile(
-        name: String,
+        fullName: String,
         phoneNumber: String,
-        university: String,
-        describe: String,
-        avatar: String,
-        id: Long
+        universityName: String,
+        description: String,
+        avatarUri: String,
+        userId: Long
     ) {
-        userDao.updateProfile(name, phoneNumber, university, describe, avatar, id)
+        userDao.updateProfile(fullName, phoneNumber, universityName, description, avatarUri, userId)
     }
 }

@@ -1,7 +1,6 @@
 package com.example.dinhngocthe.presentation.login
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,13 +42,13 @@ class LoginViewModel(context: Application) : ViewModel() {
             val user = withContext(Dispatchers.IO) {
                 userRepository.getUserByUsernameAndPassword(username, password)
             }
-            _state.update { it.copy(isLoading = false) }
             if (user == null) {
                 _event.emit(LoginEvent.ShowError("Sai tên đăng nhập hoặc mật khẩu!"))
             } else {
-                CurrentUser.id = user.id
+                CurrentUser.id = user.userId
                 _event.emit(LoginEvent.NavigateToHome)
             }
+            _state.update { it.copy(isLoading = false) }
         }
     }
 

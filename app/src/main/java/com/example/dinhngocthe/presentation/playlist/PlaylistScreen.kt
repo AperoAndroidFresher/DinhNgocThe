@@ -1,6 +1,5 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import android.annotation.SuppressLint
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +38,8 @@ import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.PlaylistDialog
 import com.example.dinhngocthe.presentation.view.PlaylistDropDownMenu
 import com.example.dinhngocthe.presentation.view.SongDropDownMenu
+import com.example.dinhngocthe.utils.formatDuration
+import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
 
 @Composable
 fun MyPlaylistScreen(
@@ -80,7 +81,7 @@ fun MyPlaylistScreen(
 
             MainPlaylist(
                 playlists = state.playlists,
-                onSelectPlaylist = { selectedPlaylist = it },           /////////////////////////////////////////////////////
+                onSelectPlaylist = { selectedPlaylist = it },
                 expandedPlaylistDropDownMenuIndex = expandedPlaylistDropDownMenuIndex,
                 showPlaylistDropDownMenu = { expandedPlaylistDropDownMenuIndex = it },
                 onDismissPlaylistDropDownMenu = { expandedPlaylistDropDownMenuIndex = -1 },
@@ -94,14 +95,14 @@ fun MyPlaylistScreen(
             if (showAddPlaylistDialog == true) PlaylistDialog(
                 onDismiss = { showAddPlaylistDialog = false },
                 playlistAction =  { viewModel.processIntent(PlaylistIntent.AddPlaylist(Playlist(
-                    name = it,
+                    playlistName = it,
                     userId = CurrentUser.id
                 ))) }
             )
 
             if (showRenamePlaylistDialog == true) PlaylistDialog(
                 onDismiss = { showRenamePlaylistDialog = false },
-                playlistAction =  { viewModel.processIntent(PlaylistIntent.RenamePlaylist(id = state.playlists[renameIndex].id, name = it)) },
+                playlistAction =  { viewModel.processIntent(PlaylistIntent.RenamePlaylist(id = state.playlists[renameIndex].playlistId, name = it)) },
                 title = "Rename Playlist",
                 actionName = "Update"
             )
@@ -137,7 +138,7 @@ fun MyPlaylistScreen(
             }
         } else { //When choose playlist
             HeaderListSongs(
-                title = state.playlists[selectedPlaylist].name,
+                title = state.playlists[selectedPlaylist].playlistName,
                 onChangeDisplayMode = { isListMode = !isListMode },
                 iconDisplayMode = iconDisplayMode,
                 goBackPlaylistMode = { selectedPlaylist = -1 }
@@ -145,19 +146,19 @@ fun MyPlaylistScreen(
 
             if (isListMode) {
                 ListSongs(
-                    songs = state.songs,
+                    songs = transformSongWithPlaylistIdToSong(state.playlists[selectedPlaylist].playlistId, state.songs),
                     expandedIndex = expandedListSongsDropDownMenuIndex,
                     onShowMenu = { expandedListSongsDropDownMenuIndex = it },
                     onDismissMenu = { expandedListSongsDropDownMenuIndex = -1 },
-                    onRemoveSong = { viewModel.processIntent(PlaylistIntent.RemoveSong(playlistIndex = selectedPlaylist, songIndex = it)) }
+                    onRemoveSong = { viewModel.processIntent(PlaylistIntent.RemoveSong(playlistId = state.playlists[selectedPlaylist].playlistId, songId = it)) }
                 )
             } else {
                 GridSongs(
-                    songs = state.songs,
+                    songs = transformSongWithPlaylistIdToSong(state.playlists[selectedPlaylist].playlistId, state.songs),
                     expandedIndex =  expandedListSongsDropDownMenuIndex,
                     onShowMenu = { expandedListSongsDropDownMenuIndex = selectedPlaylist },
                     onDismissMenu = { expandedListSongsDropDownMenuIndex = -1 },
-                    onRemove = { viewModel.processIntent(PlaylistIntent.RemoveSong(playlistIndex = selectedPlaylist, songIndex = it)) }
+                    onRemove = { viewModel.processIntent(PlaylistIntent.RemoveSong(playlistId = state.playlists[selectedPlaylist].playlistId, songId = it)) }
                 )
             }
         }
@@ -219,7 +220,7 @@ fun MainPlaylist(
                 Row {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
-                            .data(playlists[index].coverArt)
+                            .data(playlists[index].coverArtUri)
                             .size(200)
                             .build(),
                         contentDescription = "Cover art",
@@ -236,12 +237,12 @@ fun MainPlaylist(
                             .padding(top = 2.dp)
                     ) {
                         Text(
-                            playlists[index].name,
+                            playlists[index].playlistName,
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelSmall
                         )
                         Text(
-                            playlists[index].numberSong.toString() + " songs",
+                            playlists[index].numberOfSongs.toString() + " songs",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp)
                         )
@@ -345,7 +346,7 @@ fun ListSongs(
     expandedIndex: Int,
     onShowMenu: (Int) -> Unit,
     onDismissMenu: () -> Unit,
-    onRemoveSong: (Int) -> Unit
+    onRemoveSong: (Long) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
@@ -357,7 +358,7 @@ fun ListSongs(
                 Row {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
-                            .data(songs[index].coverArt)
+                            .data(songs[index].coverArtUri)
                             .size(200)
                             .build(),
                         contentDescription = "Cover art",
@@ -374,7 +375,7 @@ fun ListSongs(
                             .padding(top = 2.dp)
                     ) {
                         Text(
-                            songs[index].name,
+                            songs[index].songName,
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelSmall
                         )
@@ -413,7 +414,7 @@ fun ListSongs(
                             SongDropDownMenu(
                                 expanded = true,
                                 onDismissRequest = onDismissMenu,
-                                onRemove = { onRemoveSong(index) },
+                                onRemove = { onRemoveSong(songs[index].songId) },
                                 onShare = { }
                             )
                         }
@@ -430,7 +431,7 @@ fun GridSongs(
     expandedIndex: Int,
     onShowMenu: (Int) -> Unit,
     onDismissMenu: () -> Unit,
-    onRemove: (Int) -> Unit
+    onRemove: (Long) -> Unit
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     LazyVerticalGrid(
@@ -446,7 +447,7 @@ fun GridSongs(
                 Box(modifier = Modifier.padding(horizontal = 30.dp)) {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
-                            .data(songs[index].coverArt)
+                            .data(songs[index].coverArtUri)
                             .size(450)
                             .build(),
                         contentDescription = "Cover art",
@@ -478,14 +479,14 @@ fun GridSongs(
                         SongDropDownMenu(
                             expanded = true,
                             onDismissRequest = onDismissMenu,
-                            onRemove = { onRemove(index) },
+                            onRemove = { onRemove(songs[index].songId) },
                             onShare = {  }
                         )
                     }
                 }
                 Spacer(Modifier.size(15.dp))
                 Text(
-                    text = songs[index].name,
+                    text = songs[index].songName,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 18.sp),
                     modifier = Modifier.padding(horizontal = 30.dp),
@@ -510,10 +511,4 @@ fun GridSongs(
     }
 }
 
-@SuppressLint("DefaultLocale")
-private fun formatDuration(durationInMillis: Long): String {
-    val totalSeconds = durationInMillis / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format("%d:%02d", minutes, seconds)
-}
+

@@ -69,7 +69,7 @@ fun NavRoutes(
                 entry<Destination.HomeRoute> {
                     HomeScreen(
                         innerPadding = innerPadding,
-                        goProfile = {
+                        navigateToProfileScreen = {
                             backStack.add(Destination.ProfileRoute)
                         }
                     )

@@ -1,6 +1,5 @@
 package com.example.dinhngocthe.data.room.dao
 
-import androidx.activity.result.IntentSenderRequest
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -11,12 +10,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // When loading all songs from local storage, only insert the ones that don't already exist in Room
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAllSongs(songs: List<Song>)
 
     @Query("SELECT * FROM song")
     fun getAllSongs(): Flow<List<Song>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addSongToPlaylist(crossRef: PlaylistSongCrossRef)
+    suspend fun insertSongToPlaylist(playlistSongCrossRef: PlaylistSongCrossRef)
 }

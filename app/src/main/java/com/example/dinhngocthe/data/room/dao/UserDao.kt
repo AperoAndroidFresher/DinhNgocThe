@@ -1,10 +1,8 @@
 package com.example.dinhngocthe.data.room.dao
 
-import android.net.Uri
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
 import com.example.dinhngocthe.data.room.entities.User
 
 @Dao
@@ -12,12 +10,15 @@ interface UserDao {
     @Insert
     suspend fun insertUser(user: User)
 
-    @Query("""
+    // Used in the ProfileScreen
+    @Query(
+        """
         UPDATE user 
-        SET name = :name, phoneNumber = :phoneNumber, universityName = :university, describeYourSelf = :describe, avatar = :avatar
-        WHERE id = :id
-    """)
-    suspend fun updateProfile(name: String, phoneNumber: String, university: String, describe: String, avatar: String, id: Long)
+        SET fullName = :fullName, phoneNumber = :phoneNumber, universityName = :universityName, description = :description, avatarUri = :avatarUri
+        WHERE userId = :userId
+    """
+    )
+    suspend fun updateProfile(fullName: String, phoneNumber: String, universityName: String, description: String, avatarUri: String, userId: Long)
 
     @Query("""
         SELECT *
@@ -26,6 +27,6 @@ interface UserDao {
     """)
     suspend fun getUserByUsernameAndPassword(username: String, password: String) : User?
 
-    @Query("SELECT * FROM user WHERE id = :id")
-    suspend fun getUserById(id: Long) : User
+    @Query("SELECT * FROM user WHERE userId = :userId")
+    suspend fun getUserByUserId(userId: Long) : User
 }

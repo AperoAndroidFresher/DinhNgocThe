@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dinhngocthe.presentation.library.LibraryViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.view.InputField
 import kotlinx.coroutines.flow.collectLatest
@@ -49,9 +48,8 @@ fun LoginScreen(
     loginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
-    val app = LocalContext.current.applicationContext as Application
     val viewModel: LoginViewModel = viewModel(
-        factory = remember { LoginViewModel.LoginViewModelFactory(app) }
+        factory = remember { LoginViewModel.LoginViewModelFactory(context.applicationContext as Application) }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -69,7 +67,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
-    val trailingIcon = if (passwordVisible) R.drawable.ic_show else R.drawable.ic_hidden
+    val passwordTrailingIcon = if (passwordVisible) R.drawable.ic_show else R.drawable.ic_hidden
 
     Column(
         modifier = Modifier
@@ -90,7 +88,7 @@ fun LoginScreen(
             onCheckedChange = { rememberMe = it},
             passwordVisible = passwordVisible,
             onClickTrailingIcon = { passwordVisible = !passwordVisible },
-            trailingIcon =  trailingIcon,
+            trailingIcon =  passwordTrailingIcon,
             onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked(username, password)) }
         )
 

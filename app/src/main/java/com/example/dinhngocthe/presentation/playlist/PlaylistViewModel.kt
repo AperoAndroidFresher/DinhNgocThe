@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.repository.PlaylistRepository
-import com.example.dinhngocthe.model.Playlists
+import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +19,15 @@ class PlaylistViewModel(context: Application) : ViewModel() {
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            playlistRepository.getAllPlaylists(CurrentUser.id).collect { playlists ->
+        viewModelScope.launch {
+            playlistRepository.getAllPlaylistsByUserId(CurrentUser.id).collect { playlists ->
                 _state.update { it.copy(playlists = playlists) }
+            }
+        }
+
+        viewModelScope.launch {
+            playlistRepository.getSongWithPlaylistId().collect { songs ->
+                _state.update { it.copy(songs = songs) }
             }
         }
     }
@@ -41,19 +47,14 @@ class PlaylistViewModel(context: Application) : ViewModel() {
             }
 
             is PlaylistIntent.RemoveSong -> {
-                val playlists = Playlists.playlists.value.toMutableList()
-                val playlist = playlists[intent.playlistIndex]
-                val updatedSongs = playlist.listSongs.toMutableList().apply {
-                    removeAt(intent.songIndex)
+                viewModelScope.launch(Dispatchers.IO) {
+                    val playlistSongCrossRef = PlaylistSongCrossRef(intent.playlistId, intent.songId)
+                    playlistRepository.deleteSongFromPlaylist(playlistSongCrossRef)
+                    playlistRepository.updatePlaylistSongCount(intent.playlistId)
                 }
-                playlists[intent.playlistIndex] = playlist.copy(
-                    listSongs = updatedSongs,
-                    numberSong = updatedSongs.size
-                )
-                Playlists.playlists.value = playlists
             }
 
-            is PlaylistIntent.loadSongs -> TODO()
+            is PlaylistIntent.LoadSongs -> TODO()
         }
     }
 

@@ -20,13 +20,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(
     innerPadding: PaddingValues,
-    goProfile: () -> Unit
+    navigateToProfileScreen: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding(), start = 15.dp, end = 15.dp)
     ) {
         IconButton(
-            onClick = goProfile,
+            onClick = navigateToProfileScreen,
             modifier = Modifier.align(Alignment.End).size(50.dp).padding(8.dp)
         ) {
             Icon(

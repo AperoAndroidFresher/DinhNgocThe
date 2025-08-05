@@ -5,13 +5,16 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.room.entities.SongWithPlaylistSongCrossRefs
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
     @Query("SELECT * FROM playlist WHERE userId = :userId")
-    fun getAllPlaylists(userId: Long) : Flow<List<Playlist>>
+    fun getPlaylistByUserId(userId: Long) : Flow<List<Playlist>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylist(playlist: Playlist)
@@ -19,17 +22,32 @@ interface PlaylistDao {
     @Delete
     suspend fun deletePlaylist(playlist: Playlist)
 
-    @Query("""
+    @Query(
+        """
         UPDATE playlist
-        SET name = :name
-        WHERE id = :id
-    """)
-    suspend fun renamePlaylist(id: Long, name: String)
+        SET playlistName = :playlistName
+        WHERE playlistId = :playlistId
+    """
+    )
+    suspend fun renamePlaylist(playlistId: Long, playlistName: String)
 
-    @Query("""
+    @Query(
+        """
         UPDATE playlist
-        SET numberSong = numberSong + :number
-        WHERE id = :id
-    """)
-    suspend fun updateNumberSong(number: Int, id: Long)
+        SET numberOfSongs = (
+            SELECT COUNT(*)
+            FROM playlist_song_cross_ref
+            WHERE playlistId = :playlistId
+        )
+        WHERE playlistId = :playlistId
+    """
+    )
+    suspend fun updatePlaylistSongCount(playlistId: Long)
+
+    @Transaction
+    @Query("SELECT * FROM song")
+    fun getSongWithPlaylistSongCrossRefs() : Flow<List<SongWithPlaylistSongCrossRefs>>
+
+    @Delete
+    suspend fun deleteSongFromPlaylist(playlistSongCrossRef: PlaylistSongCrossRef)
 }

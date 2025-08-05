@@ -1,14 +1,12 @@
 package com.example.dinhngocthe.presentation.profile
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.repository.UserRepository
 import com.example.dinhngocthe.presentation.login.CurrentUser
-import com.example.dinhngocthe.presentation.login.LoginViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,16 +30,16 @@ class ProfileViewModel(
     private fun loadData() {
         viewModelScope.launch {
             val user = withContext(Dispatchers.IO) {
-                userRepository.getUserById(CurrentUser.id)
+                userRepository.getUserByUserId(CurrentUser.id)
             }
             _state.update { it.copy(
-                name = user.name,
+                name = user.fullName,
                 phoneNumber = user.phoneNumber,
                 university = user.universityName,
-                avatarUri = user.avatar,
-                description = user.describeYourSelf
+                avatarUri = user.avatarUri,
+                description = user.description
             ) }
-            Log.d(tag, user.avatar.toString())
+            Log.d(tag, user.avatarUri.toString())
         }
     }
 
@@ -106,12 +104,12 @@ class ProfileViewModel(
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     userRepository.updateProfile(
-                        name = _state.value.name,
+                        fullName = _state.value.name,
                         phoneNumber = _state.value.phoneNumber,
-                        university = _state.value.university,
-                        describe = _state.value.description,
-                        avatar = _state.value.avatarUri.toString(),
-                        id = CurrentUser.id
+                        universityName = _state.value.university,
+                        description = _state.value.description,
+                        avatarUri = _state.value.avatarUri.toString(),
+                        userId = CurrentUser.id
                     )
                 }
                 _event.emit(ProfileEvent.ShowSuccessDialog)
