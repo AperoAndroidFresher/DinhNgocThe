@@ -17,7 +17,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.room.entities.Song
-import com.example.dinhngocthe.presentation.view.LibraryDropDownMenu
+import com.example.dinhngocthe.presentation.components.LibraryDropDownMenu
 import com.example.dinhngocthe.utils.formatDuration
 
 @Composable
@@ -29,7 +29,7 @@ fun MainLibrary(
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
-    addToPlaylist: (Int) -> Unit
+    onInsertToPlaylist: (Int) -> Unit
 ) {
     val songs = if (displayMode == "local") localSongs else remoteSongs
 
@@ -46,7 +46,7 @@ fun MainLibrary(
                     expandedIndex = expandedIndex,
                     onDismissMenu = onDismissMenu,
                     onShowMenu = onShowMenu,
-                    addToPlaylist = addToPlaylist
+                    addToPlaylist = onInsertToPlaylist
                 )
             }
         }

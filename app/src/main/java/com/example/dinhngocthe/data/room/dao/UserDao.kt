@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.dinhngocthe.data.room.entities.User
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -28,5 +29,5 @@ interface UserDao {
     suspend fun getUserByUsernameAndPassword(username: String, password: String) : User?
 
     @Query("SELECT * FROM user WHERE userId = :userId")
-    suspend fun getUserByUserId(userId: Long) : User
+    fun getUserByUserId(userId: Long) : Flow<User>
 }

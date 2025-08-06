@@ -1,7 +1,6 @@
 package com.example.dinhngocthe.presentation.profile
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,61 +11,62 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ProfileViewModel(
-    context: Application
-) : ViewModel() {
+class ProfileViewModel(context: Application) : ViewModel() {
     val tag = "ProfileViewModel"
     private val userRepository = UserRepository(context)
+
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     private val _event = MutableSharedFlow<ProfileEvent>()
     val event: SharedFlow<ProfileEvent> = _event.asSharedFlow()
 
-    init {
-        loadData()
-    }
-
-    private fun loadData() {
-        viewModelScope.launch {
-            val user = withContext(Dispatchers.IO) {
-                userRepository.getUserByUserId(CurrentUser.id)
-            }
-            _state.update { it.copy(
-                name = user.fullName,
-                phoneNumber = user.phoneNumber,
-                university = user.universityName,
-                avatarUri = user.avatarUri,
-                description = user.description
-            ) }
-            Log.d(tag, user.avatarUri.toString())
-        }
-    }
-
     fun processIntent(intent: ProfileIntent) {
         when (intent) {
-            is ProfileIntent.ToggleEditMode -> _state.update { it.copy(isEditing = !it.isEditing) }
-            is ProfileIntent.ChangeTheme -> {
-                viewModelScope.launch { _event.emit(ProfileEvent.ChangeTheme) }
+            ProfileIntent.LoadData -> {
+                handleLoadData()
             }
-            is ProfileIntent.NameChanged -> _state.update { it.copy(name = intent.name, nameWarning = "") }
+
+            ProfileIntent.SubmitChange -> {
+                handleValidateAndSubmit()
+            }
+
+            is ProfileIntent.FullNameChanged -> _state.update { it.copy(fullName = intent.fullName, nameWarning = "") }
+
             is ProfileIntent.PhoneNumberChanged -> _state.update { it.copy(phoneNumber = intent.phoneNumber, phoneWarning = "") }
-            is ProfileIntent.UniversityChanged -> _state.update { it.copy(university = intent.university, universityWarning = "") }
+
+            is ProfileIntent.UniversityNameChanged -> _state.update { it.copy(university = intent.universityName, universityWarning = "") }
+
             is ProfileIntent.DescriptionChanged -> _state.update { it.copy(description = intent.description) }
-            is ProfileIntent.AvatarChanged -> _state.update { it.copy(avatarUri = intent.uri) }
-            is ProfileIntent.Submit -> validateAndSubmit()
+
+            is ProfileIntent.AvatarUriChanged -> _state.update { it.copy(avatarUri = intent.avatarUri) }
         }
     }
 
-    private fun validateAndSubmit() {
+    private fun handleLoadData() {
+        viewModelScope.launch {
+            userRepository.getUserByUserId(CurrentUser.id).collectLatest { user ->
+                _state.update { it.copy(
+                    fullName = user.fullName,
+                    phoneNumber = user.phoneNumber,
+                    university = user.universityName,
+                    avatarUri = user.avatarUri,
+                    description = user.description
+                ) }
+                //Log.d(tag, user.avatarUri.toString())
+            }
+        }
+    }
+
+    private fun handleValidateAndSubmit() {
         val stateValue = _state.value
         var hasError = false
 
         val nameWarning = when {
-            stateValue.name.isBlank() -> {
+            stateValue.fullName.isBlank() -> {
                 hasError = true; "Enter your name"
             }
-            !stateValue.name.all { it.isLetter() || it.isWhitespace() } -> {
+            !stateValue.fullName.all { it.isLetter() || it.isWhitespace() } -> {
                 hasError = true; "Invalid format"
             }
             else -> ""
@@ -104,7 +104,7 @@ class ProfileViewModel(
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     userRepository.updateProfile(
-                        fullName = _state.value.name,
+                        fullName = _state.value.fullName,
                         phoneNumber = _state.value.phoneNumber,
                         universityName = _state.value.university,
                         description = _state.value.description,
@@ -113,7 +113,6 @@ class ProfileViewModel(
                     )
                 }
                 _event.emit(ProfileEvent.ShowSuccessDialog)
-                _state.update { it.copy(isEditing = false) }
             }
         }
     }

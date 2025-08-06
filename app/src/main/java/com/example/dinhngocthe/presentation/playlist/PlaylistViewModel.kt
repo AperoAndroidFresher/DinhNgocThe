@@ -15,10 +15,35 @@ import kotlinx.coroutines.launch
 
 class PlaylistViewModel(context: Application) : ViewModel() {
     private val playlistRepository = PlaylistRepository(context)
+
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
 
-    init {
+    fun processIntent(intent: PlaylistIntent) {
+        when (intent) {
+            is PlaylistIntent.LoadData -> {
+                handleLoadData()
+            }
+
+            is PlaylistIntent.InsertPlaylist -> {
+                handleInsertPlaylist(intent)
+            }
+
+            is PlaylistIntent.DeletePlaylist -> {
+                handleDeletePlaylist(intent)
+            }
+
+            is PlaylistIntent.RenamePlaylist -> {
+                handleRenamePlaylist(intent)
+            }
+
+            is PlaylistIntent.DeleteSongFromPlaylist -> {
+                handleDeleteSongFromPlaylist(intent)
+            }
+        }
+    }
+
+    private fun handleLoadData() {
         viewModelScope.launch {
             playlistRepository.getAllPlaylistsByUserId(CurrentUser.id).collect { playlists ->
                 _state.update { it.copy(playlists = playlists) }
@@ -32,29 +57,29 @@ class PlaylistViewModel(context: Application) : ViewModel() {
         }
     }
 
-    fun processIntent(intent: PlaylistIntent) {
-        when (intent) {
-            is PlaylistIntent.AddPlaylist -> viewModelScope.launch(Dispatchers.IO) {
-                playlistRepository.insertPlaylist(intent.playlist)
-            }
+    private fun handleInsertPlaylist(intent: PlaylistIntent.InsertPlaylist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistRepository.insertPlaylist(intent.playlist)
+        }
+    }
 
-            is PlaylistIntent.RemovePlaylist -> viewModelScope.launch(Dispatchers.IO) {
-                playlistRepository.deletePlaylist(intent.playlist)
-            }
+    private fun handleDeletePlaylist(intent: PlaylistIntent.DeletePlaylist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistRepository.deletePlaylist(intent.playlist)
+        }
+    }
 
-            is PlaylistIntent.RenamePlaylist -> viewModelScope.launch(Dispatchers.IO) {
-                playlistRepository.renamePlaylist(intent.id, intent.name)
-            }
+    private fun handleRenamePlaylist(intent: PlaylistIntent.RenamePlaylist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            playlistRepository.renamePlaylist(intent.playlistId, intent.playlistName)
+        }
+    }
 
-            is PlaylistIntent.RemoveSong -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    val playlistSongCrossRef = PlaylistSongCrossRef(intent.playlistId, intent.songId)
-                    playlistRepository.deleteSongFromPlaylist(playlistSongCrossRef)
-                    playlistRepository.updatePlaylistSongCount(intent.playlistId)
-                }
-            }
-
-            is PlaylistIntent.LoadSongs -> TODO()
+    private fun handleDeleteSongFromPlaylist(intent: PlaylistIntent.DeleteSongFromPlaylist) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val playlistSongCrossRef = PlaylistSongCrossRef(intent.playlistId, intent.songId)
+            playlistRepository.deleteSongFromPlaylist(playlistSongCrossRef)
+            playlistRepository.updatePlaylistSongCount(intent.playlistId)
         }
     }
 
@@ -67,5 +92,4 @@ class PlaylistViewModel(context: Application) : ViewModel() {
             throw IllegalArgumentException("Unable to construct PlaylistViewModelFactory")
         }
     }
-
 }

@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding

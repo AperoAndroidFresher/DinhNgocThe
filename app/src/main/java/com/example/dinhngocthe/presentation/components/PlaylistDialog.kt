@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -51,7 +51,7 @@ fun PlaylistDialog(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color.White,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             TextField(
@@ -67,7 +67,7 @@ fun PlaylistDialog(
                     cursorColor = Color.White,
                 ),
                 textStyle = MaterialTheme.typography.labelSmall.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = Color.White,
                     fontSize = 18.sp
                 ),
                 placeholder = { Text(
@@ -93,7 +93,7 @@ fun PlaylistDialog(
                     Text(
                         text = "Cancel",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color.White
                         )
                     )
                 }
@@ -109,7 +109,7 @@ fun PlaylistDialog(
                     Text(
                         text = actionName,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.primary
+                            color = colorResource(R.color.primary)
                         )
                     )
                 }

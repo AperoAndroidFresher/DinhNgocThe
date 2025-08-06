@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

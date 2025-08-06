@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -18,12 +18,13 @@ import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.theme.AppFonts
 
+
 @Composable
-fun SongDropDownMenu(
+fun PlaylistDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onRemove: () -> Unit,
-    onShare: () -> Unit
+    onRename: () -> Unit
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -34,7 +35,7 @@ fun SongDropDownMenu(
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Remove from playlist",
+                    text = "Remove Playlist",
                     fontFamily = AppFonts.mainFontBold,
                     fontSize = 13.sp,
                     color = Color.White
@@ -54,23 +55,23 @@ fun SongDropDownMenu(
             }
         )
 
-        // Share
+        // Rename
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Share (coming soon)",
+                    text = "Rename",
                     fontFamily = AppFonts.mainFontBold,
                     fontSize = 13.sp,
                     color = Color.White
                 )
             },
             onClick = {
-                onShare()
+                onRename()
                 onDismissRequest()
             },
             leadingIcon = {
                 Icon(
-                    painter = painterResource(R.drawable.ic_share_song),
+                    painter = painterResource(R.drawable.ic_rename),
                     contentDescription = "Share",
                     modifier = Modifier.size(20.dp),
                     tint = Color.Unspecified
@@ -83,5 +84,5 @@ fun SongDropDownMenu(
 @Preview
 @Composable
 private fun preview() {
-    SongDropDownMenu(true, {true}, {}, {})
+    SongDropDownMenu(true, { true }, {}, {})
 }

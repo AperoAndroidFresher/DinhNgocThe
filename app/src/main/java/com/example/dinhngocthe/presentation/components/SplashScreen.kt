@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
