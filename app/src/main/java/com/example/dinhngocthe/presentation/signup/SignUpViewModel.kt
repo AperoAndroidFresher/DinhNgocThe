@@ -1,14 +1,11 @@
 package com.example.dinhngocthe.presentation.signup
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.room.LocalDatabase
 import com.example.dinhngocthe.data.room.entities.User
 import com.example.dinhngocthe.data.repository.UserRepository
-import com.example.dinhngocthe.presentation.login.LoginViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,29 +26,46 @@ class SignUpViewModel(context: Application) : ViewModel() {
 
     fun processIntent(intent: SignUpIntent) {
         when (intent) {
-            is SignUpIntent.SignUpClicked -> signUp(intent.username, intent.password, intent.confirmPassword, intent.email)
+            is SignUpIntent.SignUpClicked -> {
+                handleSignUp(
+                    username = intent.username,
+                    password = intent.password,
+                    confirmPassword = intent.confirmPassword,
+                    email = intent.email
+                )
+            }
 
-            SignUpIntent.BackToLogin -> viewModelScope.launch { _event.emit(SignUpEvent.BackToLogin) }
+            SignUpIntent.NavigateToLogin -> viewModelScope.launch { _event.emit(SignUpEvent.NavigateToLogin) }
         }
     }
 
-    private fun signUp(username: String, password: String, confirmPassword: String, email: String) = viewModelScope.launch(Dispatchers.IO) {
-        _state.update { it.copy(isLoading = true) }
-        val hasError = checkInputFormat(username, password, confirmPassword, email)
-        if (!hasError) {
-            val user = User(
-                username = username,
-                password = password,
-                email = email
+    private fun handleSignUp(
+        username: String,
+        password: String,
+        confirmPassword: String,
+        email: String
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val hasError = validateForm(
+                username,
+                password,
+                confirmPassword,
+                email
             )
-            userRepository.insertUser(user)
-            _event.emit(SignUpEvent.BackToLogin)
-            Log.d(tag, "signup success!")
+            if (!hasError) {
+                val user = User(
+                    username = username,
+                    password = password,
+                    email = email
+                )
+                userRepository.insertUser(user)
+                _event.emit(SignUpEvent.SignUpSuccess)
+                //Log.d(tag, "signup success!")
+            }
         }
-        _state.update { it.copy(isLoading = false) }
     }
 
-    private fun checkInputFormat(
+    private fun validateForm(
         username: String,
         password: String,
         confirmPassword: String,

@@ -37,7 +37,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.room.entities.Song
-import com.example.dinhngocthe.presentation.view.SongDropDownMenu
+import com.example.dinhngocthe.presentation.components.SongDropDownMenu
 import com.example.dinhngocthe.utils.formatDuration
 
 @Composable

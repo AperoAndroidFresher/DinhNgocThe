@@ -12,4 +12,5 @@
     <color name="dark">#121111</color>
     <color name="brown">#292929</color>
     <color name="line_gray">#3B3B3B</color>
+    <color name="primary">#00C2CB</color>
 </resources>

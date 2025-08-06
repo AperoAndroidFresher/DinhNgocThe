@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.dinhngocthe.data.room.LocalDatabase
 import com.example.dinhngocthe.data.room.dao.UserDao
 import com.example.dinhngocthe.data.room.entities.User
+import kotlinx.coroutines.flow.Flow
 
 class UserRepository(context: Application) {
     private val localDatabase: LocalDatabase = LocalDatabase.Companion.getInstance(context)
@@ -12,7 +13,7 @@ class UserRepository(context: Application) {
         return userDao.getUserByUsernameAndPassword(username, password)
     }
 
-    suspend fun getUserByUserId(userId: Long): User {
+    fun getUserByUserId(userId: Long): Flow<User> {
         return userDao.getUserByUserId(userId)
     }
 

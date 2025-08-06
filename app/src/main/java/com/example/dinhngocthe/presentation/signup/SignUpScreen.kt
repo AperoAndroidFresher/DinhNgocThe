@@ -15,16 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dinhngocthe.data.room.entities.User
-import com.example.dinhngocthe.presentation.login.LoginViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
-import com.example.dinhngocthe.presentation.view.InputField
+import com.example.dinhngocthe.presentation.components.InputField
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(
     innerPadding: PaddingValues,
-    signUpSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as Application
@@ -36,8 +33,8 @@ fun SignUpScreen(
     LaunchedEffect(Unit) {
         viewModel.event.collectLatest { e ->
             when (e) {
-                SignUpEvent.BackToLogin  -> onBack()
-                SignUpEvent.SignUpSuccess -> signUpSuccess()
+                SignUpEvent.NavigateToLogin  -> onBack()
+                SignUpEvent.SignUpSuccess -> onBack()
             }
         }
     }
@@ -46,10 +43,10 @@ fun SignUpScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    val passwordIcon = if (passwordVisible) R.drawable.ic_hidden else R.drawable.ic_show
-    val confirmIcon = if (confirmPasswordVisible) R.drawable.ic_hidden else R.drawable.ic_show
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val passwordTrailingIcon = if (isPasswordVisible) R.drawable.ic_hidden else R.drawable.ic_show
+    val confirmPasswordTrailingIcon = if (isConfirmPasswordVisible) R.drawable.ic_hidden else R.drawable.ic_show
 
     Column(
         modifier = Modifier
@@ -60,38 +57,42 @@ fun SignUpScreen(
                 bottom = innerPadding.calculateBottomPadding()
             )
     ) {
-        HeaderSignUp(onBack = { viewModel.processIntent(SignUpIntent.BackToLogin) })
-
-        Spacer(Modifier.size(50.dp))
+        HeaderSignUp(
+            modifier = Modifier,
+            onBack = { viewModel.processIntent(SignUpIntent.NavigateToLogin) }
+        )
 
         MainSignUp(
             username = username,
-            onUsernameChange = { username = it },
             password = password,
-            onPasswordChange = { password = it },
             confirmPassword = confirmPassword,
-            onConfirmPasswordChange = { confirmPassword = it },
-            passwordVisible = passwordVisible,
-            confirmPasswordVisible = confirmPasswordVisible,
-            onTogglePassword = { passwordVisible = !passwordVisible },
-            onToggleConfirmPassword = { confirmPasswordVisible = !confirmPasswordVisible },
-            passwordTrailingIcon = passwordIcon,
-            confirmPasswordTrailingIcon = confirmIcon,
+            isPasswordVisible = isPasswordVisible,
+            isConfirmPasswordVisible = isConfirmPasswordVisible,
+            passwordTrailingIcon = passwordTrailingIcon,
+            confirmPasswordTrailingIcon = confirmPasswordTrailingIcon,
             email = email,
-            onEmailChange = { email = it },
             usernameError = state.usernameError,
             passwordError = state.passwordError,
             confirmPasswordError = state.confirmPasswordError,
             emailError = state.emailError,
-            isLoading = state.isLoading,
+            modifier = Modifier,
+            onUsernameChange = { username = it },
+            onPasswordChange = { password = it },
+            onConfirmPasswordChange = { confirmPassword = it },
+            onChangePasswordVisibleState = { isPasswordVisible = !isPasswordVisible },
+            onChangeConfirmPasswordVisibleState = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
+            onEmailChange = { email = it },
             onSignUpClick = { viewModel.processIntent(SignUpIntent.SignUpClicked(username, password, confirmPassword, email)) }
         )
     }
 }
 
 @Composable
-private fun HeaderSignUp(onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+private fun HeaderSignUp(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
         IconButton(onClick = onBack) {
             Icon(
                 painter = painterResource(R.drawable.ic_back),
@@ -115,37 +116,38 @@ private fun HeaderSignUp(onBack: () -> Unit) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
+
+    Spacer(Modifier.size(50.dp))
 }
 
 @Composable
 private fun MainSignUp(
     username: String,
-    onUsernameChange: (String) -> Unit,
     password: String,
-    onPasswordChange: (String) -> Unit,
     confirmPassword: String,
-    onConfirmPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    confirmPasswordVisible: Boolean,
-    onTogglePassword: () -> Unit,
-    onToggleConfirmPassword: () -> Unit,
+    isPasswordVisible: Boolean,
     passwordTrailingIcon: Int,
     confirmPasswordTrailingIcon: Int,
+    isConfirmPasswordVisible: Boolean,
     email: String,
-    onEmailChange: (String) -> Unit,
     usernameError: String?,
     passwordError: String?,
     confirmPasswordError: String?,
     emailError: String?,
-    isLoading: Boolean,
+    modifier: Modifier = Modifier,
+    onUsernameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onChangePasswordVisibleState: () -> Unit,
+    onChangeConfirmPasswordVisibleState: () -> Unit,
+    onEmailChange: (String) -> Unit,
     onSignUpClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(start = 20.dp, end = 20.dp)
     ) {
-        // Username
         InputField(
             name = "user name",
             value = username,
@@ -164,7 +166,6 @@ private fun MainSignUp(
 
         Spacer(Modifier.size(5.dp))
 
-        // Password
         InputField(
             name = "password",
             value = password,
@@ -173,8 +174,8 @@ private fun MainSignUp(
             showLabel = false,
             leadingIcon = R.drawable.ic_password,
             trailingIcon = passwordTrailingIcon,
-            passWordVisible = passwordVisible,
-            onClickTrailingIcon = onTogglePassword
+            passWordVisible = isPasswordVisible,
+            onClickTrailingIcon = onChangePasswordVisibleState
         )
         if (!passwordError.isNullOrEmpty()) {
             Text(
@@ -186,7 +187,6 @@ private fun MainSignUp(
 
         Spacer(Modifier.size(5.dp))
 
-        // Confirm Password
         InputField(
             name = "confirm password",
             value = confirmPassword,
@@ -195,8 +195,8 @@ private fun MainSignUp(
             showLabel = false,
             leadingIcon = R.drawable.ic_password,
             trailingIcon = confirmPasswordTrailingIcon,
-            passWordVisible = confirmPasswordVisible,
-            onClickTrailingIcon = onToggleConfirmPassword
+            passWordVisible = isConfirmPasswordVisible,
+            onClickTrailingIcon = onChangeConfirmPasswordVisibleState
         )
         if (!confirmPasswordError.isNullOrEmpty()) {
             Text(
@@ -208,7 +208,6 @@ private fun MainSignUp(
 
         Spacer(Modifier.size(5.dp))
 
-        // Email
         InputField(
             name = "email",
             value = email,
@@ -227,14 +226,8 @@ private fun MainSignUp(
 
         Spacer(Modifier.size(30.dp))
 
-        if (isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.size(12.dp))
-        }
-
         Button(
             onClick = onSignUpClick,
-            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),

@@ -31,8 +31,8 @@ import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.room.entities.Playlist
 import com.example.dinhngocthe.presentation.theme.AppFonts
-import com.example.dinhngocthe.presentation.view.PlaylistDialog
-import com.example.dinhngocthe.presentation.view.PlaylistDropDownMenu
+import com.example.dinhngocthe.presentation.components.PlaylistDialog
+import com.example.dinhngocthe.presentation.components.PlaylistDropDownMenu
 
 @Composable
 fun PlaylistLayout(

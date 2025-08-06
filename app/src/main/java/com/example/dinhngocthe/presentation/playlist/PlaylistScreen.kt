@@ -2,13 +2,7 @@ package com.example.dinhngocthe.presentation.playlist
 
 import android.app.Application
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,32 +11,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.Song
 import com.example.dinhngocthe.presentation.login.CurrentUser
-import com.example.dinhngocthe.presentation.theme.AppFonts
-import com.example.dinhngocthe.presentation.view.PlaylistDialog
-import com.example.dinhngocthe.presentation.view.PlaylistDropDownMenu
-import com.example.dinhngocthe.presentation.view.SongDropDownMenu
-import com.example.dinhngocthe.utils.formatDuration
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
-import kotlin.text.get
 
 @Composable
 fun MyPlaylistScreen(

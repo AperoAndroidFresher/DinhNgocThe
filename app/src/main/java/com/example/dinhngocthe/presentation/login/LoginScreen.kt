@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
-import com.example.dinhngocthe.presentation.view.InputField
+import com.example.dinhngocthe.presentation.components.InputField
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable

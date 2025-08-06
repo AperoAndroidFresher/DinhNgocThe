@@ -61,7 +61,6 @@ fun NavRoutes(
                 entry<Destination.SignUpRoute> {
                     SignUpScreen(
                         innerPadding = innerPadding,
-                        signUpSuccess = { backStack.removeLastOrNull() },
                         onBack = { backStack.removeLastOrNull() }
                     )
                 }

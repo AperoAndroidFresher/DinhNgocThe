@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.view
+package com.example.dinhngocthe.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -18,13 +18,12 @@ import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.theme.AppFonts
 
-
 @Composable
-fun PlaylistDropDownMenu(
+fun SongDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onRemove: () -> Unit,
-    onRename: () -> Unit
+    onDelete: () -> Unit,
+    onShare: () -> Unit
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -35,14 +34,14 @@ fun PlaylistDropDownMenu(
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Remove Playlist",
+                    text = "Remove from playlist",
                     fontFamily = AppFonts.mainFontBold,
                     fontSize = 13.sp,
                     color = Color.White
                 )
             },
             onClick = {
-                onRemove()
+                onDelete()
                 onDismissRequest()
             },
             leadingIcon = {
@@ -55,23 +54,23 @@ fun PlaylistDropDownMenu(
             }
         )
 
-        // Rename
+        // Share
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Rename",
+                    text = "Share (coming soon)",
                     fontFamily = AppFonts.mainFontBold,
                     fontSize = 13.sp,
                     color = Color.White
                 )
             },
             onClick = {
-                onRename()
+                onShare()
                 onDismissRequest()
             },
             leadingIcon = {
                 Icon(
-                    painter = painterResource(R.drawable.ic_rename),
+                    painter = painterResource(R.drawable.ic_share_song),
                     contentDescription = "Share",
                     modifier = Modifier.size(20.dp),
                     tint = Color.Unspecified
@@ -84,5 +83,5 @@ fun PlaylistDropDownMenu(
 @Preview
 @Composable
 private fun preview() {
-    SongDropDownMenu(true, { true }, {}, {})
+    SongDropDownMenu(true, {true}, {}, {})
 }
