@@ -1,39 +1,55 @@
 package com.example.dinhngocthe.presentation.library
 
+import android.os.Message
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.data.room.entities.Song
+import com.example.dinhngocthe.data.local.entities.Song
+import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.components.LibraryDropDownMenu
 import com.example.dinhngocthe.utils.formatDuration
 
 @Composable
 fun MainLibrary(
-    displayMode: String,
+    songSource: SongSource,
     localSongs: List<Song>,
     remoteSongs: List<Song>,
     expandedIndex: Int,
+    isLoadingRemoteSongs: Boolean,
+    remoteError: String,
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
-    onInsertToPlaylist: (Int) -> Unit
+    onInsertToPlaylist: (Long) -> Unit,
+    reload: () -> Unit
 ) {
-    val songs = if (displayMode == "local") localSongs else remoteSongs
+    val songs = if (songSource == SongSource.LOCAL) localSongs else remoteSongs
 
-    if (songs.isNotEmpty()) {
+    if (songSource == SongSource.LOCAL) { // Local mode
         LazyColumn(
             modifier = modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 20.dp),
@@ -45,8 +61,51 @@ fun MainLibrary(
                     index = index,
                     expandedIndex = expandedIndex,
                     onDismissMenu = onDismissMenu,
-                    onShowMenu = onShowMenu,
-                    addToPlaylist = onInsertToPlaylist
+                    onShowMenu = { onShowMenu(index) },
+                    addToPlaylist = { onInsertToPlaylist(songs[index].songId) }
+                )
+            }
+        }
+    } else { // Remote mode
+        // animation loading remote songs
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+        val progress by animateLottieCompositionAsState(
+            composition = composition,
+            iterations = LottieConstants.IterateForever
+        )
+        if (isLoadingRemoteSongs) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(120.dp)
+                )
+            }
+        } else {
+            if (remoteError == "") {
+                LazyColumn(
+                    modifier = modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(songs.size) { index ->
+                        SongItem(
+                            song = songs[index],
+                            index = index,
+                            expandedIndex = expandedIndex,
+                            onDismissMenu = onDismissMenu,
+                            onShowMenu = { onShowMenu(index) },
+                            addToPlaylist = { onInsertToPlaylist(songs[index].songId) }
+                        )
+                    }
+                }
+            } else {
+                LoadMusicError(
+                    message = remoteError,
+                    reload = { reload() }
                 )
             }
         }
@@ -74,10 +133,13 @@ private fun SongItem(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(50.dp)
-                    .clip(RoundedCornerShape(5.dp))
+                    .clip(RoundedCornerShape(5.dp)),
+                error = painterResource(R.drawable.img_song_default)
             )
             Spacer(Modifier.size(15.dp))
-            Column(modifier = Modifier.fillMaxHeight().padding(top = 2.dp)) {
+            Column(modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 2.dp)) {
                 Text(
                     song.songName,
                     color = MaterialTheme.colorScheme.primary,
@@ -125,4 +187,53 @@ private fun SongItem(
             }
         }
     }
+}
+
+@Composable
+fun LoadMusicError(
+    modifier: Modifier = Modifier,
+    message: String,
+    reload: () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_load_music_error),
+            contentDescription = "image load music error",
+            modifier = Modifier.size(120.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 20.sp
+            ),
+            modifier = Modifier.align(Alignment.CenterHorizontally).width(300.dp),
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.size(30.dp))
+        Button(
+            onClick = { reload() },
+            colors = ButtonDefaults.buttonColors(
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier.size(120.dp, 45.dp).clip(RoundedCornerShape(10.dp))
+        ) {
+            Text(
+                text = "Try again",
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun LoadMusicErrorPrev() {
+    LoadMusicError(reload = {}, message = "No internet connection, please check your connection again")
 }

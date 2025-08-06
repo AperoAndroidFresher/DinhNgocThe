@@ -76,4 +76,6 @@ fun HeaderLibrary(
             )
         }
     }
+
+    Spacer(Modifier.size(25.dp))
 }

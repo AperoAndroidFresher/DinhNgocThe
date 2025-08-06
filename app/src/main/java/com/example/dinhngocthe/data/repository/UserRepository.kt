@@ -1,9 +1,9 @@
 package com.example.dinhngocthe.data.repository
 
 import android.app.Application
-import com.example.dinhngocthe.data.room.LocalDatabase
-import com.example.dinhngocthe.data.room.dao.UserDao
-import com.example.dinhngocthe.data.room.entities.User
+import com.example.dinhngocthe.data.local.LocalDatabase
+import com.example.dinhngocthe.data.local.dao.UserDao
+import com.example.dinhngocthe.data.local.entities.User
 import kotlinx.coroutines.flow.Flow
 
 class UserRepository(context: Application) {

@@ -32,7 +32,7 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.presentation.theme.AppFonts
 
 @Composable

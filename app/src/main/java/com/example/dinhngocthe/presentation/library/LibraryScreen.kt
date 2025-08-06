@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
 
@@ -55,12 +57,12 @@ fun LibraryScreen(
         }
     }
 
-    var songSource by remember { mutableStateOf("local") }
+    var songSource by remember { mutableStateOf(SongSource.LOCAL) }
     lateinit var buttonLocalColor: Pair<Color, Color>
     lateinit var buttonRemoteColor: Pair<Color, Color>
 
     // Swap color when change songSource
-    if (songSource == "local") {
+    if (songSource == SongSource.LOCAL) {
         buttonLocalColor = MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
         buttonRemoteColor = MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
     } else {
@@ -71,7 +73,7 @@ fun LibraryScreen(
 
     var songMenuIndex by remember { mutableIntStateOf(-1) }
     var isInsertToPlaylistDialogVisible by remember { mutableStateOf(false) }
-    var selectedSongIndex by remember { mutableIntStateOf(-1) }
+    var selectedSongIdToAdd by remember { mutableLongStateOf(-1) }
 
     Column(
         modifier = Modifier
@@ -84,25 +86,27 @@ fun LibraryScreen(
     ) {
         HeaderLibrary(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onLocalClick = { songSource = "local" },
-            onRemoteClick = { songSource = "remote" },
+            onLocalClick = { songSource = SongSource.LOCAL },
+            onRemoteClick = { songSource = SongSource.REMOTE },
             localColor = buttonLocalColor,
             remoteColor = buttonRemoteColor
         )
 
-        Spacer(Modifier.size(25.dp))
-
         MainLibrary(
-            displayMode = songSource,
+            songSource = songSource,
             localSongs = state.localSongs,
             remoteSongs = state.remoteSongs,
             expandedIndex = songMenuIndex,
+            isLoadingRemoteSongs = state.isLoadingRemoteSongs,
+            remoteError = state.remoteError,
+            modifier = Modifier,
             onShowMenu = { songMenuIndex = it },
             onDismissMenu = { songMenuIndex = -1 },
             onInsertToPlaylist = {
                 isInsertToPlaylistDialogVisible = true
-                selectedSongIndex = it
-            }
+                selectedSongIdToAdd = it
+            },
+            reload = { viewModel.loadSongsFromRemoteAndSaveToRoom() }
         )
 
         if (isInsertToPlaylistDialogVisible) {
@@ -110,9 +114,8 @@ fun LibraryScreen(
                 playlists = state.playlists,
                 onDismiss = { isInsertToPlaylistDialogVisible = false },
                 onSelectPlaylist = {
-                    val song = state.localSongs[selectedSongIndex]
                     //Log.d("Library Screen", song.name + it)
-                    viewModel.processIntent(LibraryIntent.AddMusicToPlaylist(state.playlists[it].playlistId, song.songId))
+                    viewModel.processIntent(LibraryIntent.AddMusicToPlaylist(state.playlists[it].playlistId, selectedSongIdToAdd))
                     isInsertToPlaylistDialogVisible = false
                 },
                 navigateToPlaylist = {

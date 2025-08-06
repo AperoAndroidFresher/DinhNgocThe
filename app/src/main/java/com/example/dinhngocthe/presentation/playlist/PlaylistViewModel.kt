@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.repository.PlaylistRepository
-import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
