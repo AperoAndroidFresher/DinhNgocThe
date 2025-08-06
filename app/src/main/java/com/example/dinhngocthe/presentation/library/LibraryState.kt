@@ -1,7 +1,7 @@
 package com.example.dinhngocthe.presentation.library
 
-import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.Song
+import com.example.dinhngocthe.data.local.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.Song
 
 
 data class LibraryState(
@@ -9,5 +9,7 @@ data class LibraryState(
     val remoteSongs: List<Song> = listOf<Song>(),
     val playlists: List<Playlist> = listOf<Playlist>(), // When selecting playlist to add
     val isLoadingLocalSongs: Boolean = false,
-    val error: String = ""
+    val isLoadingRemoteSongs: Boolean = false,
+    val localError: String = "",
+    val remoteError: String = ""
 )

@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
 

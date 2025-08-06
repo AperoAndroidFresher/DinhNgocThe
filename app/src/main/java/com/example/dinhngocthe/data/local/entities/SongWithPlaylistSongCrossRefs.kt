@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.data.room.entities
+package com.example.dinhngocthe.data.local.entities
 
 import androidx.room.Embedded
 import androidx.room.Relation

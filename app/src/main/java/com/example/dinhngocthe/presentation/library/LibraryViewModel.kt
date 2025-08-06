@@ -1,18 +1,20 @@
 package com.example.dinhngocthe.presentation.library
 
 import android.app.Application
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.repository.PlaylistRepository
-import com.example.dinhngocthe.data.repository.SongRepository
-import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
-import com.example.dinhngocthe.data.room.entities.Song
+import com.example.dinhngocthe.data.repository.SongRepositoryImpl
+import com.example.dinhngocthe.data.local.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.local.entities.Song
+import com.example.dinhngocthe.data.local.entities.SongSource
+import com.example.dinhngocthe.data.remote.model.toSong
+import com.example.dinhngocthe.domain.repository.SongRepository
 import com.example.dinhngocthe.presentation.login.CurrentUser
-import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,7 +28,7 @@ import kotlinx.coroutines.launch
 class LibraryViewModel(context: Application) : ViewModel() {
     val tag = "LibraryViewModel"
 
-    private val songRepository = SongRepository(context)
+    private val songRepository: SongRepository = SongRepositoryImpl(context)
     private val playlistRepository = PlaylistRepository(context)
 
     private val _state: MutableStateFlow<LibraryState> = MutableStateFlow<LibraryState>(LibraryState())
@@ -52,6 +54,8 @@ class LibraryViewModel(context: Application) : ViewModel() {
     }
 
     private fun handleLoadData() {
+        loadSongsFromRemoteAndSaveToRoom()
+
         viewModelScope.launch(Dispatchers.IO) {
             loadLocalSongsAndSaveToRoom()
         }
@@ -63,22 +67,44 @@ class LibraryViewModel(context: Application) : ViewModel() {
         }
 
         viewModelScope.launch {
-            songRepository.getAllSongs().collectLatest { songs: List<Song> ->
-                _state.update { it.copy(localSongs = songs) }
+            songRepository.getSongsFromRoom().collectLatest { songs: List<Song> ->
+                _state.update {
+                    it.copy(
+                        localSongs = songs.filter { it.source == SongSource.LOCAL },
+                        remoteSongs = songs.filter { it.source == SongSource.REMOTE }
+                    )
+                }
             }
         }
     }
 
     suspend fun loadLocalSongsAndSaveToRoom() {
-        _state.update { it.copy(isLoadingLocalSongs = true) }
-        val songs: List<Song>? = songRepository.loadLocalSongs()
+        _state.update { it.copy(isLoadingLocalSongs = true, localError = "") }
+        val songs: List<Song>? = songRepository.loadLocalSongsFromDevice()
 
         if (songs == null) {
-            _state.update { it.copy(isLoadingLocalSongs = false, error = "Error when loading songs") }
+            _state.update { it.copy(isLoadingLocalSongs = false, localError = "Error when loading songs") }
         } else {
-            songRepository.insertAllSongs(songs)
+            songRepository.insertAllSongsToRoom(songs)
             _state.update { it.copy(isLoadingLocalSongs = false) }
         }
+    }
+
+    fun loadSongsFromRemoteAndSaveToRoom() {
+        _state.update { it.copy(isLoadingRemoteSongs = true, remoteError = "") }
+        songRepository.getSongsFromRemote(
+            onSuccess = {
+                val songs = it.map { it.toSong() }
+                viewModelScope.launch(Dispatchers.IO) {
+                    delay(2000)
+                    songRepository.insertAllSongsToRoom(songs)
+                    _state.update { it.copy(isLoadingRemoteSongs = false) }
+                }
+            },
+            onFailure = { throwable ->
+                _state.update { it.copy(isLoadingRemoteSongs = false, remoteError = throwable.message.toString()) }
+            }
+        )
     }
 
     private fun handleAddMusicToPlaylist(intent: LibraryIntent.AddMusicToPlaylist) {
@@ -87,7 +113,7 @@ class LibraryViewModel(context: Application) : ViewModel() {
                 playlistId = intent.playlistId,
                 songId = intent.songId
             )
-            songRepository.addSongToPlaylist(playlistSongCrossRef = playlistSongCrossRef)
+            songRepository.insertSongToPlaylistInRoom(playlistSongCrossRef = playlistSongCrossRef)
             playlistRepository.updatePlaylistSongCount(playlistId = intent.playlistId)
         }
     }

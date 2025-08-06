@@ -1,7 +1,7 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.SongWithPlaylistSongCrossRefs
+import com.example.dinhngocthe.data.local.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.SongWithPlaylistSongCrossRefs
 
 data class PlaylistState(
     val playlists: List<Playlist> = listOf<Playlist>(),

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.components.PlaylistDialog
 import com.example.dinhngocthe.presentation.components.PlaylistDropDownMenu

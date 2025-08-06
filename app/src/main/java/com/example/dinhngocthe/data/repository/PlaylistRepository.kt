@@ -1,11 +1,11 @@
 package com.example.dinhngocthe.data.repository
 
 import android.app.Application
-import com.example.dinhngocthe.data.room.LocalDatabase
-import com.example.dinhngocthe.data.room.dao.PlaylistDao
-import com.example.dinhngocthe.data.room.entities.Playlist
-import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
-import com.example.dinhngocthe.data.room.entities.SongWithPlaylistSongCrossRefs
+import com.example.dinhngocthe.data.local.LocalDatabase
+import com.example.dinhngocthe.data.local.dao.PlaylistDao
+import com.example.dinhngocthe.data.local.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.local.entities.SongWithPlaylistSongCrossRefs
 import kotlinx.coroutines.flow.Flow
 
 class PlaylistRepository(context: Application) {

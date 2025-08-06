@@ -1,11 +1,11 @@
-package com.example.dinhngocthe.data.room.dao
+package com.example.dinhngocthe.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.dinhngocthe.data.room.entities.PlaylistSongCrossRef
-import com.example.dinhngocthe.data.room.entities.Song
+import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.local.entities.Song
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -1,8 +1,8 @@
 package com.example.dinhngocthe.utils
 
 import android.annotation.SuppressLint
-import com.example.dinhngocthe.data.room.entities.Song
-import com.example.dinhngocthe.data.room.entities.SongWithPlaylistSongCrossRefs
+import com.example.dinhngocthe.data.local.entities.Song
+import com.example.dinhngocthe.data.local.entities.SongWithPlaylistSongCrossRefs
 
 fun transformSongWithPlaylistIdToSong(
     playlistId: Long,

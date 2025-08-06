@@ -1,6 +1,6 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import com.example.dinhngocthe.data.room.entities.Playlist
+import com.example.dinhngocthe.data.local.entities.Playlist
 
 
 sealed interface PlaylistIntent {

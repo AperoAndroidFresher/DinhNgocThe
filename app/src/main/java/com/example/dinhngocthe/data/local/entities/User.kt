@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.data.room.entities
+package com.example.dinhngocthe.data.local.entities
 
 import android.net.Uri
 import androidx.room.Entity
