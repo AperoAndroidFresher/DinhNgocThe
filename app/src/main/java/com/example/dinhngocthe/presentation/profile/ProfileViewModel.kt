@@ -1,20 +1,27 @@
 package com.example.dinhngocthe.presentation.profile
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.repository.UserRepositoryImpl
-import com.example.dinhngocthe.presentation.login.CurrentUser
+import com.example.dinhngocthe.data.local.preferences.SessionManager
+import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ProfileViewModel(context: Application) : ViewModel() {
+class ProfileViewModel(
+    private val userPrefs: UserPreferences,
+    private val userRepository: UserRepository
+) : ViewModel() {
     val tag = "ProfileViewModel"
-    private val userRepository = UserRepositoryImpl(context)
-
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
@@ -45,7 +52,7 @@ class ProfileViewModel(context: Application) : ViewModel() {
 
     private fun handleLoadData() {
         viewModelScope.launch {
-            userRepository.getUserByUserId(CurrentUser.id).collectLatest { user ->
+            userRepository.getUserByUserId(userPrefs.getUserId() ?: SessionManager.userId).collectLatest { user ->
                 _state.update { it.copy(
                     fullName = user.fullName,
                     phoneNumber = user.phoneNumber,
@@ -109,21 +116,11 @@ class ProfileViewModel(context: Application) : ViewModel() {
                         universityName = _state.value.university,
                         description = _state.value.description,
                         avatarUri = _state.value.avatarUri.toString(),
-                        userId = CurrentUser.id
+                        userId = userPrefs.getUserId() ?: SessionManager.userId
                     )
                 }
                 _event.emit(ProfileEvent.ShowSuccessDialog)
             }
-        }
-    }
-
-    class ProfileViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return ProfileViewModel(context) as T
-            }
-            throw IllegalArgumentException("Unable to construct ProfileViewModelFactory")
         }
     }
 }

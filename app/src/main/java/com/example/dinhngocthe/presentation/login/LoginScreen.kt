@@ -40,18 +40,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.components.InputField
 import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
     innerPadding: PaddingValues,
     onSignUp: () -> Unit,
-    loginSuccess: () -> Unit
+    loginSuccess: () -> Unit,
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val viewModel: LoginViewModel = viewModel(
-        factory = remember { LoginViewModel.LoginViewModelFactory(context.applicationContext as Application) }
-    )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    viewModel.checkAutoLogin()
 
     LaunchedEffect(Unit) {
         viewModel.event.collectLatest { event ->
@@ -89,7 +89,7 @@ fun LoginScreen(
             passwordVisible = passwordVisible,
             onClickTrailingIcon = { passwordVisible = !passwordVisible },
             trailingIcon =  passwordTrailingIcon,
-            onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked(username, password)) }
+            onLoginClick = { viewModel.processIntent(LoginIntent.LoginClicked(username, password, rememberMe)) }
         )
 
         Footer(onSignUp = {viewModel.processIntent(LoginIntent.NavigateToSignUp)})

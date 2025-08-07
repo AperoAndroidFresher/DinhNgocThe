@@ -96,4 +96,10 @@ dependencies {
     // Retrofit
     implementation(libs.squareup.retrofit)
     implementation(libs.converter.gson)
+
+    // Koin
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+
 }
