@@ -18,16 +18,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
 import com.example.dinhngocthe.presentation.components.InputField
 import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SignUpScreen(
     innerPadding: PaddingValues,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: SignUpViewModel = koinViewModel()
 ) {
-    val app = LocalContext.current.applicationContext as Application
-    val viewModel: SignUpViewModel = viewModel(
-        factory = remember { SignUpViewModel.SignUpViewModelFactory(app) }
-    )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {

@@ -16,18 +16,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.data.local.entities.Playlist
-import com.example.dinhngocthe.presentation.login.CurrentUser
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MyPlaylistScreen(
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    viewModel: PlaylistViewModel = koinViewModel()
 ) {
-    val context = LocalContext.current.applicationContext as Application
-    val viewModel: PlaylistViewModel = viewModel(
-        factory = remember { PlaylistViewModel.PlaylistViewModelFactory(context) }
-    )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -71,12 +67,7 @@ fun MyPlaylistScreen(
                 onChangeRenamingPlaylistIndex = { renamingPlaylistIndex = it },
                 onInsertPlaylist = {
                     viewModel.processIntent(
-                        PlaylistIntent.InsertPlaylist(
-                            Playlist(
-                                playlistName = it,
-                                userId = CurrentUser.id
-                            )
-                        )
+                        PlaylistIntent.InsertPlaylist(playlistName = it)
                     )
                 },
                 onRenamePlaylist = {

@@ -15,9 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class SignUpViewModel(context: Application) : ViewModel() {
+class SignUpViewModel(
+    private val userRepository: UserRepository
+) : ViewModel() {
     val tag = "SignUpViewModel"
-    private val userRepository: UserRepository = UserRepositoryImpl(context)
 
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.asStateFlow()
@@ -121,15 +122,5 @@ class SignUpViewModel(context: Application) : ViewModel() {
         val hasError = uErr != null || pErr != null || cErr != null || eErr != null
 
         return hasError
-    }
-
-    class SignUpViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(SignUpViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return SignUpViewModel(context) as T
-            }
-            throw IllegalArgumentException("Unable to construct SignUpViewModelFactory")
-        }
     }
 }

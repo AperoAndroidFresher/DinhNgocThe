@@ -27,16 +27,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LibraryScreen(
     innerPadding: PaddingValues,
-    navigateToPlaylist: () -> Unit
+    navigateToPlaylist: () -> Unit,
+    viewModel: LibraryViewModel = koinViewModel()
 ) {
-    val context = LocalContext.current.applicationContext as Application
-    val viewModel: LibraryViewModel = viewModel(
-        factory = remember { LibraryViewModel.LibraryViewModelFactory(context) }
-    )
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     RequestAudioPermissionIfNeeded(

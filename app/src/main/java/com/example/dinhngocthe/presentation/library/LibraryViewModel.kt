@@ -14,11 +14,12 @@ import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
+import com.example.dinhngocthe.data.local.preferences.SessionManager
+import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.repository.SongRepositoryImpl
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
-import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,13 +32,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LibraryViewModel(context: Application) : ViewModel() {
+class LibraryViewModel(
+    private val userPrefs: UserPreferences,
+    private val songRepository: SongRepository,
+    private val playlistRepository: PlaylistRepository
+) : ViewModel() {
     val tag = "LibraryViewModel"
-
-    private val deviceSongDataSource: DeviceSongDataSource = DeviceSongDataSourceImpl()
-    private val downloadSongDataSource: DownloadSongDataSource = DownloadSongDataSourceImpl()
-    private val songRepository: SongRepository = SongRepositoryImpl(context, deviceSongDataSource, downloadSongDataSource)
-    private val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(context)
 
     private val _state: MutableStateFlow<LibraryState> = MutableStateFlow<LibraryState>(LibraryState())
     val state: StateFlow<LibraryState> = _state.asStateFlow()
@@ -73,7 +73,7 @@ class LibraryViewModel(context: Application) : ViewModel() {
         }
 
         viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(CurrentUser.id).collectLatest { playlists: List<Playlist> ->
+            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId() ?: SessionManager.userId).collectLatest { playlists: List<Playlist> ->
                 _state.update { it.copy(playlists = playlists) }
             }
         }
@@ -138,15 +138,5 @@ class LibraryViewModel(context: Application) : ViewModel() {
 
     private fun handleViewOffline() {
         _state.update { it.copy(remoteError = "") }
-    }
-
-    class LibraryViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(LibraryViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return LibraryViewModel(context) as T
-            }
-            throw IllegalArgumentException("Unable to construct LibraryViewModelFactory")
-        }
     }
 }

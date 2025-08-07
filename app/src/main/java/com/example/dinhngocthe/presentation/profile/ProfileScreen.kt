@@ -22,18 +22,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.R
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProfileScreen(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
     val tag = "ProfileScreen"
     val context = LocalContext.current
-    val viewModel: ProfileViewModel = viewModel(
-        factory = remember { ProfileViewModel.ProfileViewModelFactory(context.applicationContext as Application) }
-    )
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     var isSuccessDialogVisible by remember { mutableStateOf(false) }

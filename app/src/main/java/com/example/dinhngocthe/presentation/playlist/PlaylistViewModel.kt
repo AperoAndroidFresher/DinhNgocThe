@@ -4,19 +4,22 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.data.local.preferences.SessionManager
+import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
-import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel(context: Application) : ViewModel() {
-    private val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(context)
-
+class PlaylistViewModel(
+    private val userPrefs: UserPreferences,
+    private val playlistRepository: PlaylistRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()
 
@@ -46,7 +49,7 @@ class PlaylistViewModel(context: Application) : ViewModel() {
 
     private fun handleLoadData() {
         viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(CurrentUser.id).collect { playlists ->
+            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId() ?: SessionManager.userId).collect { playlists ->
                 _state.update { it.copy(playlists = playlists) }
             }
         }
@@ -60,7 +63,12 @@ class PlaylistViewModel(context: Application) : ViewModel() {
 
     private fun handleInsertPlaylist(intent: PlaylistIntent.InsertPlaylist) {
         viewModelScope.launch(Dispatchers.IO) {
-            playlistRepository.insertPlaylist(intent.playlist)
+            playlistRepository.insertPlaylist(
+                Playlist(
+                    playlistName = intent.playlistName,
+                    userId = userPrefs.getUserId() ?: SessionManager.userId
+                )
+            )
         }
     }
 
@@ -81,16 +89,6 @@ class PlaylistViewModel(context: Application) : ViewModel() {
             val playlistSongCrossRef = PlaylistSongCrossRef(intent.playlistId, intent.songId)
             playlistRepository.deleteSongFromPlaylist(playlistSongCrossRef)
             playlistRepository.updatePlaylistSongCount(intent.playlistId)
-        }
-    }
-
-    class PlaylistViewModelFactory(private val context: Application) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(PlaylistViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return PlaylistViewModel(context) as T
-            }
-            throw IllegalArgumentException("Unable to construct PlaylistViewModelFactory")
         }
     }
 }
