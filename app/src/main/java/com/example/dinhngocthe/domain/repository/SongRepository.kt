@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.domain.repository
 
+import android.content.Context
 import android.hardware.camera2.CaptureFailure
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
@@ -15,4 +16,5 @@ interface SongRepository {
         onSuccess: (List<SongDto>) -> Unit,
         onFailure: (Throwable) -> Unit
     )
+    suspend fun downloadAndSaveSongDtosToStorage(songDtos: List<SongDto>): List<Song>
 }

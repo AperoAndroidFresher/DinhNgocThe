@@ -4,4 +4,5 @@ sealed interface LibraryIntent {
     data class AddMusicToPlaylist(val playlistId: Long, val songId: Long) : LibraryIntent
     data object NavigateToPlaylist : LibraryIntent
     data object LoadData : LibraryIntent
+    data object ViewOffline : LibraryIntent
 }

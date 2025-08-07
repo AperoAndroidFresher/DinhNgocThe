@@ -15,5 +15,6 @@ data class Song(
     val singer: String = "",
     val duration: Long = 0L,
     val coverArtUri: Uri? = null,
-    val source: SongSource = SongSource.LOCAL
+    val source: SongSource = SongSource.LOCAL,
+    val audioUri: Uri? = null
 )

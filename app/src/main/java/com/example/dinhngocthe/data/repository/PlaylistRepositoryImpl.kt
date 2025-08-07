@@ -6,37 +6,38 @@ import com.example.dinhngocthe.data.local.dao.PlaylistDao
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.SongWithPlaylistSongCrossRefs
+import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import kotlinx.coroutines.flow.Flow
 
-class PlaylistRepository(context: Application) {
+class PlaylistRepositoryImpl(context: Application) : PlaylistRepository{
     private val localDatabase: LocalDatabase = LocalDatabase.getInstance(context)
     private val playlistDao: PlaylistDao = localDatabase.playlistDao()
 
-    fun getAllPlaylistsByUserId(userId: Long): Flow<List<Playlist>> {
+    override fun getAllPlaylistsByUserId(userId: Long): Flow<List<Playlist>> {
         return playlistDao.getPlaylistByUserId(userId)
     }
 
-    suspend fun insertPlaylist(playlist: Playlist) {
+    override suspend fun insertPlaylist(playlist: Playlist) {
         playlistDao.insertPlaylist(playlist)
     }
 
-    suspend fun deletePlaylist(playlist: Playlist) {
+    override suspend fun deletePlaylist(playlist: Playlist) {
         playlistDao.deletePlaylist(playlist)
     }
 
-    suspend fun renamePlaylist(playlistId: Long, playlistName: String) {
+    override suspend fun renamePlaylist(playlistId: Long, playlistName: String) {
         playlistDao.renamePlaylist(playlistId, playlistName)
     }
 
-    suspend fun updatePlaylistSongCount(playlistId: Long) {
+    override suspend fun updatePlaylistSongCount(playlistId: Long) {
         playlistDao.updatePlaylistSongCount(playlistId)
     }
 
-    fun getSongWithPlaylistId(): Flow<List<SongWithPlaylistSongCrossRefs>> {
+    override fun getSongWithPlaylistId(): Flow<List<SongWithPlaylistSongCrossRefs>> {
         return playlistDao.getSongWithPlaylistSongCrossRefs()
     }
 
-    suspend fun deleteSongFromPlaylist(playlistSongCrossRef: PlaylistSongCrossRef) {
+    override suspend fun deleteSongFromPlaylist(playlistSongCrossRef: PlaylistSongCrossRef) {
         playlistDao.deleteSongFromPlaylist(playlistSongCrossRef)
     }
 }

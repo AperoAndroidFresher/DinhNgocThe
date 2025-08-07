@@ -45,35 +45,33 @@ fun MainLibrary(
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
     onInsertToPlaylist: (Long) -> Unit,
-    reload: () -> Unit
+    reload: () -> Unit,
+    viewOffline: () -> Unit
 ) {
-    val songs = if (songSource == SongSource.LOCAL) localSongs else remoteSongs
-
     if (songSource == SongSource.LOCAL) { // Local mode
         LazyColumn(
             modifier = modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(songs.size) { index ->
+            items(localSongs.size) { index ->
                 SongItem(
-                    song = songs[index],
+                    song = localSongs[index],
                     index = index,
                     expandedIndex = expandedIndex,
                     onDismissMenu = onDismissMenu,
                     onShowMenu = { onShowMenu(index) },
-                    addToPlaylist = { onInsertToPlaylist(songs[index].songId) }
+                    addToPlaylist = { onInsertToPlaylist(localSongs[index].songId) }
                 )
             }
         }
     } else { // Remote mode
-        // animation loading remote songs
-        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
-        val progress by animateLottieCompositionAsState(
-            composition = composition,
-            iterations = LottieConstants.IterateForever
-        )
         if (isLoadingRemoteSongs) {
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+            val progress by animateLottieCompositionAsState(
+                composition = composition,
+                iterations = LottieConstants.IterateForever
+            )
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -91,21 +89,22 @@ fun MainLibrary(
                     contentPadding = PaddingValues(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(songs.size) { index ->
+                    items(remoteSongs.size) { index ->
                         SongItem(
-                            song = songs[index],
+                            song = remoteSongs[index],
                             index = index,
                             expandedIndex = expandedIndex,
                             onDismissMenu = onDismissMenu,
                             onShowMenu = { onShowMenu(index) },
-                            addToPlaylist = { onInsertToPlaylist(songs[index].songId) }
+                            addToPlaylist = { onInsertToPlaylist(remoteSongs[index].songId) }
                         )
                     }
                 }
             } else {
                 LoadMusicError(
                     message = remoteError,
-                    reload = { reload() }
+                    reload = { reload() },
+                    viewOffline = { viewOffline() }
                 )
             }
         }
@@ -193,7 +192,8 @@ private fun SongItem(
 fun LoadMusicError(
     modifier: Modifier = Modifier,
     message: String,
-    reload: () -> Unit
+    reload: () -> Unit,
+    viewOffline: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -212,28 +212,53 @@ fun LoadMusicError(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp
             ),
-            modifier = Modifier.align(Alignment.CenterHorizontally).width(300.dp),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .width(300.dp),
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.size(30.dp))
-        Button(
-            onClick = { reload() },
-            colors = ButtonDefaults.buttonColors(
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                containerColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier.size(120.dp, 45.dp).clip(RoundedCornerShape(10.dp))
-        ) {
-            Text(
-                text = "Try again",
-                style = MaterialTheme.typography.labelSmall
-            )
+        Row {
+            Button(
+                onClick = { reload() },
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .size(150.dp, 45.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            ) {
+                Text(
+                    text = "Try again",
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+
+            Spacer(Modifier.size(20.dp))
+
+            Button(
+                onClick = { viewOffline() },
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .size(150.dp, 45.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            ) {
+                Text(
+                    text = "View offline",
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
+
     }
 }
 
 @Preview
 @Composable
 private fun LoadMusicErrorPrev() {
-    LoadMusicError(reload = {}, message = "No internet connection, please check your connection again")
+    //LoadMusicError(reload = {}, message = "No internet connection, please check your connection again")
 }

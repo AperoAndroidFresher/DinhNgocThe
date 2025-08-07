@@ -4,24 +4,25 @@ import android.app.Application
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.UserDao
 import com.example.dinhngocthe.data.local.entities.User
+import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 
-class UserRepository(context: Application) {
+class UserRepositoryImpl(context: Application) : UserRepository {
     private val localDatabase: LocalDatabase = LocalDatabase.Companion.getInstance(context)
     private val userDao: UserDao = localDatabase.userDao()
-    suspend fun getUserByUsernameAndPassword(username: String, password: String) : User? {
+    override suspend fun getUserByUsernameAndPassword(username: String, password: String) : User? {
         return userDao.getUserByUsernameAndPassword(username, password)
     }
 
-    fun getUserByUserId(userId: Long): Flow<User> {
+    override fun getUserByUserId(userId: Long): Flow<User> {
         return userDao.getUserByUserId(userId)
     }
 
-    suspend fun insertUser(user: User) {
+    override suspend fun insertUser(user: User) {
         userDao.insertUser(user)
     }
 
-    suspend fun updateProfile(
+    override suspend fun updateProfile(
         fullName: String,
         phoneNumber: String,
         universityName: String,
