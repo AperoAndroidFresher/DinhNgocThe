@@ -106,7 +106,8 @@ fun LibraryScreen(
                 isInsertToPlaylistDialogVisible = true
                 selectedSongIdToAdd = it
             },
-            reload = { viewModel.loadSongsFromRemoteAndSaveToRoom() }
+            reload = { viewModel.loadSongsFromRemoteAndSaveToRoom() },
+            viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) }
         )
 
         if (isInsertToPlaylistDialogVisible) {

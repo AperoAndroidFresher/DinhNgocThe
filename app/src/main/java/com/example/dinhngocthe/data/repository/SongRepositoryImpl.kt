@@ -1,9 +1,12 @@
 package com.example.dinhngocthe.data.repository
 
 import android.app.Application
+import android.content.Context
+import android.util.Log
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.SongDao
-import com.example.dinhngocthe.data.local.datasource.loadAllSongs
+import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
+import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.remote.api.ApiClient
@@ -14,12 +17,19 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SongRepositoryImpl(private val context: Application) : SongRepository {
+class SongRepositoryImpl(
+    private val context: Application,
+    private val deviceSongDataSource: DeviceSongDataSource,
+    private val downloadSongDataSource: DownloadSongDataSource
+) : SongRepository {
     private val localDatabase: LocalDatabase = LocalDatabase.getInstance(context)
     private val songDao: SongDao = localDatabase.songDao()
+    override suspend fun downloadAndSaveSongDtosToStorage(songDtos: List<SongDto>): List<Song> {
+        return downloadSongDataSource.downloadAndSaveSongDtosToStorage(context, songDtos)
+    }
 
     override fun loadLocalSongsFromDevice(): List<Song>? {
-        return loadAllSongs(context)
+        return deviceSongDataSource.loadAllSongsFromDevice(context)
     }
 
     override fun getSongsFromRoom(): Flow<List<Song>> {

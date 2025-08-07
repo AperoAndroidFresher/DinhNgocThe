@@ -1,16 +1,22 @@
 package com.example.dinhngocthe.presentation.library
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.repository.PlaylistRepository
-import com.example.dinhngocthe.data.repository.SongRepositoryImpl
+import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
+import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
+import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
+import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
-import com.example.dinhngocthe.data.remote.model.toSong
+import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
+import com.example.dinhngocthe.data.repository.SongRepositoryImpl
+import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +34,10 @@ import kotlinx.coroutines.launch
 class LibraryViewModel(context: Application) : ViewModel() {
     val tag = "LibraryViewModel"
 
-    private val songRepository: SongRepository = SongRepositoryImpl(context)
-    private val playlistRepository = PlaylistRepository(context)
+    private val deviceSongDataSource: DeviceSongDataSource = DeviceSongDataSourceImpl()
+    private val downloadSongDataSource: DownloadSongDataSource = DownloadSongDataSourceImpl()
+    private val songRepository: SongRepository = SongRepositoryImpl(context, deviceSongDataSource, downloadSongDataSource)
+    private val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(context)
 
     private val _state: MutableStateFlow<LibraryState> = MutableStateFlow<LibraryState>(LibraryState())
     val state: StateFlow<LibraryState> = _state.asStateFlow()
@@ -49,6 +57,10 @@ class LibraryViewModel(context: Application) : ViewModel() {
 
             LibraryIntent.NavigateToPlaylist -> {
                 handleNavigateToPlaylist()
+            }
+
+            LibraryIntent.ViewOffline -> {
+                handleViewOffline()
             }
         }
     }
@@ -93,11 +105,11 @@ class LibraryViewModel(context: Application) : ViewModel() {
     fun loadSongsFromRemoteAndSaveToRoom() {
         _state.update { it.copy(isLoadingRemoteSongs = true, remoteError = "") }
         songRepository.getSongsFromRemote(
-            onSuccess = {
-                val songs = it.map { it.toSong() }
+            onSuccess = { songDtos ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    delay(2000)
+                    val songs = songRepository.downloadAndSaveSongDtosToStorage(songDtos)
                     songRepository.insertAllSongsToRoom(songs)
+                    delay(1000)
                     _state.update { it.copy(isLoadingRemoteSongs = false) }
                 }
             },
@@ -122,6 +134,10 @@ class LibraryViewModel(context: Application) : ViewModel() {
         viewModelScope.launch {
             _event.emit(LibraryEvent.NavigateToPlaylist)
         }
+    }
+
+    private fun handleViewOffline() {
+        _state.update { it.copy(remoteError = "") }
     }
 
     class LibraryViewModelFactory(private val context: Application) : ViewModelProvider.Factory {

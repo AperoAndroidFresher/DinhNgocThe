@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.local.entities.User
-import com.example.dinhngocthe.data.repository.UserRepository
+import com.example.dinhngocthe.data.repository.UserRepositoryImpl
+import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class SignUpViewModel(context: Application) : ViewModel() {
     val tag = "SignUpViewModel"
-    private val userRepository = UserRepository(context)
+    private val userRepository: UserRepository = UserRepositoryImpl(context)
 
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.asStateFlow()

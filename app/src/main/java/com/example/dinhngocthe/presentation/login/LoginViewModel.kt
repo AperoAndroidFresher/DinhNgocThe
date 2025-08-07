@@ -4,7 +4,8 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.repository.UserRepository
+import com.example.dinhngocthe.data.repository.UserRepositoryImpl
+import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,7 @@ import kotlinx.coroutines.withContext
 
 class LoginViewModel(context: Application) : ViewModel() {
     val tag = "LoginViewModel"
-    private val userRepository = UserRepository(context)
+    private val userRepository: UserRepository = UserRepositoryImpl(context)
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 

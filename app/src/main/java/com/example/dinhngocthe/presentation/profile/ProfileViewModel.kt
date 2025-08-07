@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.repository.UserRepository
+import com.example.dinhngocthe.data.repository.UserRepositoryImpl
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class ProfileViewModel(context: Application) : ViewModel() {
     val tag = "ProfileViewModel"
-    private val userRepository = UserRepository(context)
+    private val userRepository = UserRepositoryImpl(context)
 
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()

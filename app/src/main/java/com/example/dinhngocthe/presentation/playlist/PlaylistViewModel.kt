@@ -4,8 +4,9 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.repository.PlaylistRepository
+import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
+import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.presentation.login.CurrentUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(context: Application) : ViewModel() {
-    private val playlistRepository = PlaylistRepository(context)
+    private val playlistRepository: PlaylistRepository = PlaylistRepositoryImpl(context)
 
     private val _state = MutableStateFlow(PlaylistState())
     val state = _state.asStateFlow()

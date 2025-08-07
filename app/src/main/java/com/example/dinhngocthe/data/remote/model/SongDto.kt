@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.data.remote.model
 
+import android.net.Uri
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
 import com.google.gson.annotations.SerializedName
@@ -14,11 +15,13 @@ data class SongDto(
     val path: String = "",
 )
 
-fun SongDto.toSong() : Song {
+fun SongDto.toSong(audioUri: Uri? = null, coverArtUri: Uri? = null): Song {
     return Song(
         songName = this.songName,
         singer = this.singer,
         duration = this.duration.toLongOrNull() ?: 0L,
-        source = SongSource.REMOTE
+        coverArtUri = coverArtUri,
+        source = SongSource.REMOTE,
+        audioUri = audioUri
     )
 }
