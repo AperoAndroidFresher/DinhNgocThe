@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.components
+package com.example.dinhngocthe.presentation.splash
 
 import com.example.dinhngocthe.R
 import androidx.compose.foundation.Image
@@ -16,9 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.dinhngocthe.presentation.login.LoginViewModel
 import com.example.dinhngocthe.presentation.theme.AppFonts
-import org.koin.androidx.compose.koinViewModel
 
 @Preview(showBackground = true)
 @Composable

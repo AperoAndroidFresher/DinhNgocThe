@@ -28,7 +28,7 @@ class SongRepositoryImpl(
         return downloadSongDataSource.downloadAndSaveSongDtosToStorage(context, songDtos)
     }
 
-    override fun loadLocalSongsFromDevice(): List<Song>? {
+    override suspend fun loadLocalSongsFromDevice(): List<Song>? {
         return deviceSongDataSource.loadAllSongsFromDevice(context)
     }
 

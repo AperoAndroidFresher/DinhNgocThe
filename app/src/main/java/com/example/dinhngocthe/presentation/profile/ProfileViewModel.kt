@@ -2,7 +2,6 @@ package com.example.dinhngocthe.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.preferences.SessionManager
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +51,7 @@ class ProfileViewModel(
 
     private fun handleLoadData() {
         viewModelScope.launch {
-            userRepository.getUserByUserId(userPrefs.getUserId() ?: SessionManager.userId).collectLatest { user ->
+            userRepository.getUserByUserId(userPrefs.getUserId()!!).collectLatest { user ->
                 _state.update { it.copy(
                     fullName = user.fullName,
                     phoneNumber = user.phoneNumber,
@@ -116,7 +115,7 @@ class ProfileViewModel(
                         universityName = _state.value.university,
                         description = _state.value.description,
                         avatarUri = _state.value.avatarUri.toString(),
-                        userId = userPrefs.getUserId() ?: SessionManager.userId
+                        userId = userPrefs.getUserId()!!
                     )
                 }
                 _event.emit(ProfileEvent.ShowSuccessDialog)
