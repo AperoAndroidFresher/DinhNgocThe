@@ -1,13 +1,9 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.local.entities.Playlist
-import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
-import com.example.dinhngocthe.data.local.preferences.SessionManager
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +45,7 @@ class PlaylistViewModel(
 
     private fun handleLoadData() {
         viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId() ?: SessionManager.userId).collect { playlists ->
+            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId()!!).collect { playlists ->
                 _state.update { it.copy(playlists = playlists) }
             }
         }
@@ -66,7 +62,7 @@ class PlaylistViewModel(
             playlistRepository.insertPlaylist(
                 Playlist(
                     playlistName = intent.playlistName,
-                    userId = userPrefs.getUserId() ?: SessionManager.userId
+                    userId = userPrefs.getUserId()!!
                 )
             )
         }

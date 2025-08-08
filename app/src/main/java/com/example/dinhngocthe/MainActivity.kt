@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.dinhngocthe.presentation.navigation.NavRoutes
 import com.example.dinhngocthe.presentation.theme.AppTheme
-import com.example.dinhngocthe.presentation.components.SplashScreen
+import com.example.dinhngocthe.presentation.splash.SplashScreen
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {

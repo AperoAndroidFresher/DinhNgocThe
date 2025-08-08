@@ -1,13 +1,13 @@
 package com.example.dinhngocthe.presentation.library
 
-import android.app.Application
+import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,12 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
+import com.example.dinhngocthe.service.MusicService
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -35,6 +34,7 @@ fun LibraryScreen(
     navigateToPlaylist: () -> Unit,
     viewModel: LibraryViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     RequestAudioPermissionIfNeeded(
@@ -42,18 +42,6 @@ fun LibraryScreen(
             viewModel.processIntent(LibraryIntent.LoadData)
         }
     )
-
-    LaunchedEffect(Unit) {
-        viewModel.processIntent(LibraryIntent.LoadData)
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.event.collect { event ->
-            when(event) {
-                LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
-            }
-        }
-    }
 
     var songSource by remember { mutableStateOf(SongSource.LOCAL) }
     lateinit var buttonLocalColor: Pair<Color, Color>
@@ -72,6 +60,33 @@ fun LibraryScreen(
     var songMenuIndex by remember { mutableIntStateOf(-1) }
     var isInsertToPlaylistDialogVisible by remember { mutableStateOf(false) }
     var selectedSongIdToAdd by remember { mutableLongStateOf(-1) }
+    var selectedSongLocalIndex by remember { mutableIntStateOf(-1) }
+    var selectedSongRemoteIndex by remember { mutableIntStateOf(-1) }
+
+    LaunchedEffect(Unit) {
+        viewModel.processIntent(LibraryIntent.LoadData)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when(event) {
+                LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
+
+                is LibraryEvent.PlayMusic -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_START
+                        Log.d("LibraryScreen", event.songId.toString())
+                        putExtra("SONG_ID", event.songId)
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(intent)
+                    } else {
+                        context.startService(intent)
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -97,6 +112,8 @@ fun LibraryScreen(
             expandedIndex = songMenuIndex,
             isLoadingRemoteSongs = state.isLoadingRemoteSongs,
             remoteError = state.remoteError,
+            selectedSongLocalIndex = selectedSongLocalIndex,
+            selectedSongRemoteIndex = selectedSongRemoteIndex,
             modifier = Modifier,
             onShowMenu = { songMenuIndex = it },
             onDismissMenu = { songMenuIndex = -1 },
@@ -104,8 +121,18 @@ fun LibraryScreen(
                 isInsertToPlaylistDialogVisible = true
                 selectedSongIdToAdd = it
             },
-            reload = { viewModel.loadSongsFromRemoteAndSaveToRoom() },
-            viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) }
+            reload = { viewModel.processIntent(LibraryIntent.LoadData) },
+            viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) },
+            onChangeSelectedSongLocalIndex = {
+                selectedSongRemoteIndex = -1
+                selectedSongLocalIndex = it
+                viewModel.processIntent(LibraryIntent.PlayMusic(state.localSongs[it].songId))
+            },
+            onChangeSelectedSongRemoteIndex = {
+                selectedSongRemoteIndex = it
+                selectedSongLocalIndex = -1
+                viewModel.processIntent(LibraryIntent.PlayMusic(state.remoteSongs[it].songId))
+            }
         )
 
         if (isInsertToPlaylistDialogVisible) {

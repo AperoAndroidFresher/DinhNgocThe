@@ -1,9 +1,7 @@
 package com.example.dinhngocthe.presentation.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.preferences.SessionManager
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
@@ -51,17 +49,10 @@ class LoginViewModel(
             if (user == null) {
                 _event.emit(LoginEvent.ShowError("Sai tên đăng nhập hoặc mật khẩu!"))
             } else {
-                if (rememberMe) {
-                    userPreferences.setRememberMe(true)
-                    userPreferences.setUserId(user.userId)
-                } else {
-                    userPreferences.setRememberMe(false)
-                    userPreferences.clearUserId()
-                }
-                SessionManager.userId = user.userId
+                userPreferences.setUserId(user.userId)
+                userPreferences.setRememberMe(rememberMe)
                 _event.emit(LoginEvent.NavigateToHome)
             }
-
             _state.update { it.copy(isLoading = false) }
         }
     }
@@ -69,8 +60,7 @@ class LoginViewModel(
     fun checkAutoLogin() {
         val remembered = userPreferences.isRememberMe()
         val userId = userPreferences.getUserId()
-        Log.d(tag, "checkAutoLogin: remembered=$remembered, userId=$userId")
-        if (remembered && userId != null) {
+        if (remembered == true && userId != null) {
             viewModelScope.launch {
                 _event.emit(LoginEvent.NavigateToHome)
             }

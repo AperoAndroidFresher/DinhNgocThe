@@ -8,7 +8,7 @@ import com.example.dinhngocthe.data.remote.model.SongDto
 import kotlinx.coroutines.flow.Flow
 
 interface SongRepository {
-    fun loadLocalSongsFromDevice(): List<Song>?
+    suspend fun loadLocalSongsFromDevice(): List<Song>?
     fun getSongsFromRoom(): Flow<List<Song>>
     suspend fun insertAllSongsToRoom(songs: List<Song>)
     suspend fun insertSongToPlaylistInRoom(playlistSongCrossRef: PlaylistSongCrossRef)

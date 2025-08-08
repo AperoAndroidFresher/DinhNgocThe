@@ -14,8 +14,11 @@ interface SongDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAllSongs(songs: List<Song>)
 
-    @Query("SELECT * FROM song")
+    @Query("SELECT * FROM song ORDER BY songName ASC")
     fun getAllSongs(): Flow<List<Song>>
+
+    @Query("SELECT * FROM song ORDER BY songName ASC")
+    suspend fun getAllSongsService(): List<Song>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSongToPlaylist(playlistSongCrossRef: PlaylistSongCrossRef)

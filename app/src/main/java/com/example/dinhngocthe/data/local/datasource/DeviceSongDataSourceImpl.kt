@@ -10,7 +10,7 @@ import com.example.dinhngocthe.data.local.entities.Song
 import java.io.File
 
 class DeviceSongDataSourceImpl() : DeviceSongDataSource {
-    override fun loadAllSongsFromDevice(context: Application): List<Song>? {
+    override suspend fun loadAllSongsFromDevice(context: Application): List<Song>? {
         try {
             val contentResolver = context.contentResolver
             val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI

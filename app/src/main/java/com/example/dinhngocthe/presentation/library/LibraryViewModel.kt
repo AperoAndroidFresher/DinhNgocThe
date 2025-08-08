@@ -1,23 +1,12 @@
 package com.example.dinhngocthe.presentation.library
 
-import android.annotation.SuppressLint
-import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
-import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
-import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
-import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
-import com.example.dinhngocthe.data.local.preferences.SessionManager
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
-import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
-import com.example.dinhngocthe.data.repository.SongRepositoryImpl
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
 import kotlinx.coroutines.Dispatchers
@@ -62,22 +51,27 @@ class LibraryViewModel(
             LibraryIntent.ViewOffline -> {
                 handleViewOffline()
             }
+
+            is LibraryIntent.PlayMusic -> {
+                handlePlayMusic(intent)
+            }
+        }
+    }
+
+    private fun handlePlayMusic(intent: LibraryIntent.PlayMusic) {
+        viewModelScope.launch {
+            _event.emit(LibraryEvent.PlayMusic(intent.songId))
         }
     }
 
     private fun handleLoadData() {
         loadSongsFromRemoteAndSaveToRoom()
+        loadLocalSongsAndSaveToRoom()
+        getAllPlaylistsByUserId()
+        getSongsFromRoom()
+    }
 
-        viewModelScope.launch(Dispatchers.IO) {
-            loadLocalSongsAndSaveToRoom()
-        }
-
-        viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId() ?: SessionManager.userId).collectLatest { playlists: List<Playlist> ->
-                _state.update { it.copy(playlists = playlists) }
-            }
-        }
-
+    private fun getSongsFromRoom() {
         viewModelScope.launch {
             songRepository.getSongsFromRoom().collectLatest { songs: List<Song> ->
                 _state.update {
@@ -90,19 +84,29 @@ class LibraryViewModel(
         }
     }
 
-    suspend fun loadLocalSongsAndSaveToRoom() {
-        _state.update { it.copy(isLoadingLocalSongs = true, localError = "") }
-        val songs: List<Song>? = songRepository.loadLocalSongsFromDevice()
-
-        if (songs == null) {
-            _state.update { it.copy(isLoadingLocalSongs = false, localError = "Error when loading songs") }
-        } else {
-            songRepository.insertAllSongsToRoom(songs)
-            _state.update { it.copy(isLoadingLocalSongs = false) }
+    private fun getAllPlaylistsByUserId() {
+        viewModelScope.launch {
+            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId()!!).collectLatest { playlists: List<Playlist> ->
+                _state.update { it.copy(playlists = playlists) }
+            }
         }
     }
 
-    fun loadSongsFromRemoteAndSaveToRoom() {
+    private fun loadLocalSongsAndSaveToRoom() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoadingLocalSongs = true, localError = "") }
+            val songs: List<Song>? = songRepository.loadLocalSongsFromDevice()
+
+            if (songs == null) {
+                _state.update { it.copy(isLoadingLocalSongs = false, localError = "Error when loading songs") }
+            } else {
+                songRepository.insertAllSongsToRoom(songs)
+                _state.update { it.copy(isLoadingLocalSongs = false) }
+            }
+        }
+    }
+
+    private fun loadSongsFromRemoteAndSaveToRoom() {
         _state.update { it.copy(isLoadingRemoteSongs = true, remoteError = "") }
         songRepository.getSongsFromRemote(
             onSuccess = { songDtos ->
