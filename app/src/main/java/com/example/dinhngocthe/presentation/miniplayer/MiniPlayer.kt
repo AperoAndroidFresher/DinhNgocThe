@@ -1,4 +1,4 @@
-package com.example.dinhngocthe.presentation.components
+package com.example.dinhngocthe.presentation.miniplayer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

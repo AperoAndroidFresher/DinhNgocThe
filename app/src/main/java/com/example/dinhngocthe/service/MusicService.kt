@@ -45,14 +45,48 @@ class MusicService : Service() {
         mediaSession = MediaSessionCompat(this, "MusicService")
         songDao = LocalDatabase.getInstance(application).songDao()
         createNotificationChannel()
-
         CoroutineScope(Dispatchers.IO).launch {
             playlist = songDao.getAllSongsService()
-            if (playlist.isNotEmpty()) {
-                currentTrackIndex = 0
-                prepareAndStart()
-                startForeground(NOTIFICATION_ID, buildNotification())
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_PLAY_PAUSE -> {
+                togglePlayPause()
             }
+            ACTION_NEXT -> {
+                nextTrack()
+            }
+            ACTION_PREVIOUS -> {
+                previousTrack()
+            }
+            ACTION_CLOSE -> {
+                stopForeground(true)
+                stopSelf()
+            }
+            ACTION_START -> {
+                start(intent)
+            }
+        }
+        return START_STICKY
+    }
+
+    private fun start(intent: Intent) {
+        val songId = intent.getLongExtra("SONG_ID", -1)
+        if (playlist.isEmpty()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                playlist = songDao.getAllSongsService()
+                if (playlist.isNotEmpty()) {
+                    updateCurrentTrackIndex(songId)
+                    prepareAndStart()
+                    startForeground(NOTIFICATION_ID, buildNotification())
+                }
+            }
+        } else {
+            updateCurrentTrackIndex(songId)
+            prepareAndStart()
+            startForeground(NOTIFICATION_ID, buildNotification())
         }
     }
 
@@ -69,36 +103,6 @@ class MusicService : Service() {
             }
             prepareAsync()
         }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_PLAY_PAUSE -> togglePlayPause()
-            ACTION_NEXT -> nextTrack()
-            ACTION_PREVIOUS -> previousTrack()
-            ACTION_CLOSE -> {
-                stopForeground(true)
-                stopSelf()
-            }
-            ACTION_START -> {
-                val songId = intent.getLongExtra("SONG_ID", -1L)
-                if (playlist.isEmpty()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        playlist = songDao.getAllSongsService()
-                        if (playlist.isNotEmpty()) {
-                            updateCurrentTrackIndex(songId)
-                            prepareAndStart()
-                            startForeground(NOTIFICATION_ID, buildNotification())
-                        }
-                    }
-                } else {
-                    updateCurrentTrackIndex(songId)
-                    prepareAndStart()
-                    startForeground(NOTIFICATION_ID, buildNotification())
-                }
-            }
-        }
-        return START_STICKY
     }
 
     private fun updateCurrentTrackIndex(songId: Long) {

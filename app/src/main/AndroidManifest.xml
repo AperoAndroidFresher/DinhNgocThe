@@ -34,6 +34,6 @@
         <service
             android:name=".service.MusicService"
             android:foregroundServiceType="mediaPlayback"
-            android:exported="false" />
+            android:exported="false"/>
     </application>
 </manifest>
