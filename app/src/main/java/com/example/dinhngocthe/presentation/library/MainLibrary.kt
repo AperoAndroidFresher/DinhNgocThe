@@ -2,6 +2,8 @@ package com.example.dinhngocthe.presentation.library
 
 import android.os.Message
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,27 +44,31 @@ fun MainLibrary(
     expandedIndex: Int,
     isLoadingRemoteSongs: Boolean,
     remoteError: String,
+    selectedSongLocalIndex: Int,
+    selectedSongRemoteIndex: Int,
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
     onInsertToPlaylist: (Long) -> Unit,
     reload: () -> Unit,
-    viewOffline: () -> Unit
+    viewOffline: () -> Unit,
+    onChangeSelectedSongLocalIndex: (Int) -> Unit,
+    onChangeSelectedSongRemoteIndex: (Int) -> Unit
 ) {
     if (songSource == SongSource.LOCAL) { // Local mode
         LazyColumn(
-            modifier = modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = modifier.fillMaxWidth()
         ) {
             items(localSongs.size) { index ->
                 SongItem(
                     song = localSongs[index],
                     index = index,
                     expandedIndex = expandedIndex,
+                    selectedSongIndex = selectedSongLocalIndex,
                     onDismissMenu = onDismissMenu,
                     onShowMenu = { onShowMenu(index) },
-                    addToPlaylist = { onInsertToPlaylist(localSongs[index].songId) }
+                    addToPlaylist = { onInsertToPlaylist(localSongs[index].songId) },
+                    onChangeSelectedSongIndex = { onChangeSelectedSongLocalIndex(it) }
                 )
             }
         }
@@ -85,18 +92,18 @@ fun MainLibrary(
         } else {
             if (remoteError == "") {
                 LazyColumn(
-                    modifier = modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = modifier.fillMaxWidth()
                 ) {
                     items(remoteSongs.size) { index ->
                         SongItem(
                             song = remoteSongs[index],
                             index = index,
                             expandedIndex = expandedIndex,
+                            selectedSongIndex = selectedSongRemoteIndex,
                             onDismissMenu = onDismissMenu,
                             onShowMenu = { onShowMenu(index) },
-                            addToPlaylist = { onInsertToPlaylist(remoteSongs[index].songId) }
+                            addToPlaylist = { onInsertToPlaylist(remoteSongs[index].songId) },
+                            onChangeSelectedSongIndex = { onChangeSelectedSongRemoteIndex(it) }
                         )
                     }
                 }
@@ -116,12 +123,22 @@ private fun SongItem(
     song: Song,
     index: Int,
     expandedIndex: Int,
+    selectedSongIndex: Int,
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
-    addToPlaylist: (Int) -> Unit
+    addToPlaylist: (Int) -> Unit,
+    onChangeSelectedSongIndex: (Int) -> Unit
 ) {
-    Box(modifier = modifier.fillMaxWidth()) {
+    val color = if (selectedSongIndex == index) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(color)
+            .clickable{ onChangeSelectedSongIndex(index) }
+            .padding(horizontal = 20.dp, vertical = 10.dp)
+    ) {
         Row {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)

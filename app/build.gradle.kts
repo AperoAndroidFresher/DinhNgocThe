@@ -102,4 +102,5 @@ dependencies {
     implementation(libs.koin.android)
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
+    implementation(libs.androidx.media)
 }

@@ -51,6 +51,16 @@ class LibraryViewModel(
             LibraryIntent.ViewOffline -> {
                 handleViewOffline()
             }
+
+            is LibraryIntent.PlayMusic -> {
+                handlePlayMusic(intent)
+            }
+        }
+    }
+
+    private fun handlePlayMusic(intent: LibraryIntent.PlayMusic) {
+        viewModelScope.launch {
+            _event.emit(LibraryEvent.PlayMusic(intent.songId))
         }
     }
 
