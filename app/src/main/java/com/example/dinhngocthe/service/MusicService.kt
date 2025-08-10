@@ -17,6 +17,7 @@ import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.SongDao
 import com.example.dinhngocthe.data.local.entities.Song
+import com.example.dinhngocthe.data.local.preferences.SongPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class MusicService : Service() {
     private var mediaPlayer: MediaPlayer? = null
 
     private lateinit var songDao: SongDao
+    private lateinit var songPrefs: SongPreferences
     private var playlist: List<Song> = emptyList()
     private var currentTrackIndex = 0
 
@@ -44,9 +46,22 @@ class MusicService : Service() {
         super.onCreate()
         mediaSession = MediaSessionCompat(this, "MusicService")
         songDao = LocalDatabase.getInstance(application).songDao()
+        songPrefs = SongPreferences(this)
         createNotificationChannel()
         CoroutineScope(Dispatchers.IO).launch {
             playlist = songDao.getAllSongsService()
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Music Playback",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
         }
     }
 
@@ -62,8 +77,10 @@ class MusicService : Service() {
                 previousTrack()
             }
             ACTION_CLOSE -> {
+                currentTrackIndex = -1
                 stopForeground(true)
                 stopSelf()
+                songPrefs.removeSongId()
             }
             ACTION_START -> {
                 start(intent)
@@ -114,6 +131,10 @@ class MusicService : Service() {
         currentTrackIndex = if (index != -1) index else 0
     }
 
+    private fun updateCurrentSongId() {
+        songPrefs.setSongId(playlist[currentTrackIndex].songId)
+    }
+
     private fun togglePlayPause() {
         mediaPlayer?.let {
             if (it.isPlaying) {
@@ -128,12 +149,14 @@ class MusicService : Service() {
     private fun nextTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size
+        updateCurrentSongId()
         prepareAndStart()
     }
 
     private fun previousTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = if (currentTrackIndex - 1 < 0) playlist.size - 1 else currentTrackIndex - 1
+        updateCurrentSongId()
         prepareAndStart()
     }
 
@@ -161,18 +184,14 @@ class MusicService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val trackInfo = if (currentSong != null) {
+        val contentTitle = "Apero Music   ${currentTrackIndex + 1}/${playlist.size}"
+        val contentText = currentSong?.let {
             "${currentSong.songName} - ${currentSong.singer}"
-        } else "No song playing"
-
-        val trackCountInfo = if (playlist.isNotEmpty()) {
-            "${currentTrackIndex + 1}/${playlist.size}"
-        } else ""
+        }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("AperoMusic")
-            .setContentText(trackInfo)
-            .setSubText(trackCountInfo)
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_logo)
             .setContentIntent(mainIntent)
             .addAction(R.drawable.ic_previous_music, "Previous", previousIntent)
@@ -186,28 +205,14 @@ class MusicService : Service() {
             .setStyle(
                 MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
-                    .setShowActionsInCompactView(0, 1, 2)
             )
             .setOnlyAlertOnce(true)
-            .setOngoing(mediaPlayer?.isPlaying == true)
             .build()
     }
 
     private fun updateNotification() {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, buildNotification())
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Music Playback",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
     }
 
     override fun onDestroy() {

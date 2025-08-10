@@ -22,7 +22,7 @@ class UserPreferences(context: Context) {
         return if (id == -1L) null else id
     }
 
-    fun clearUserId() {
+    fun removeUserId() {
         prefs.edit { remove(KEY_USER_ID) }
     }
 

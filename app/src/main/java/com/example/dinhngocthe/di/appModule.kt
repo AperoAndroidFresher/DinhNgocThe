@@ -5,6 +5,7 @@ import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
+import com.example.dinhngocthe.data.local.preferences.SongPreferences
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.repository.SongRepositoryImpl
@@ -25,6 +26,7 @@ val appModule = module {
 
     // Preferences
     single { UserPreferences(androidContext()) }
+    single { SongPreferences(androidContext()) }
 
     // DataSources
     single<DeviceSongDataSource> { DeviceSongDataSourceImpl() }
@@ -43,7 +45,7 @@ val appModule = module {
 
     // ViewModels
     viewModel { LoginViewModel(get(), get()) }
-    viewModel { LibraryViewModel(get(), get(), get()) }
+    viewModel { LibraryViewModel(get(), get(), get(), get()) }
     viewModel { PlaylistViewModel(get(), get()) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }

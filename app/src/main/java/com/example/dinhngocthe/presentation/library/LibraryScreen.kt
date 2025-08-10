@@ -2,7 +2,6 @@ package com.example.dinhngocthe.presentation.library
 
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -60,8 +59,6 @@ fun LibraryScreen(
     var songMenuIndex by remember { mutableIntStateOf(-1) }
     var isInsertToPlaylistDialogVisible by remember { mutableStateOf(false) }
     var selectedSongIdToAdd by remember { mutableLongStateOf(-1) }
-    var selectedSongLocalIndex by remember { mutableIntStateOf(-1) }
-    var selectedSongRemoteIndex by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(Unit) {
         viewModel.processIntent(LibraryIntent.LoadData)
@@ -71,12 +68,11 @@ fun LibraryScreen(
         viewModel.event.collect { event ->
             when(event) {
                 LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
-
                 is LibraryEvent.PlayMusic -> {
                     val intent = Intent(context, MusicService::class.java).apply {
                         action = MusicService.ACTION_START
-                        Log.d("LibraryScreen", event.songId.toString())
-                        putExtra("SONG_ID", event.songId)
+                        putExtra("SONG_ID", event.currentSongId)
+                        putExtra("SONG_IDS", ArrayList<Long>(event.songIds))
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(intent)
@@ -112,8 +108,8 @@ fun LibraryScreen(
             expandedIndex = songMenuIndex,
             isLoadingRemoteSongs = state.isLoadingRemoteSongs,
             remoteError = state.remoteError,
-            selectedSongLocalIndex = selectedSongLocalIndex,
-            selectedSongRemoteIndex = selectedSongRemoteIndex,
+            currentSongId = state.currentSongId,
+            currentPlaySourceName = state.currentPlaySourceName,
             modifier = Modifier,
             onShowMenu = { songMenuIndex = it },
             onDismissMenu = { songMenuIndex = -1 },
@@ -123,15 +119,8 @@ fun LibraryScreen(
             },
             reload = { viewModel.processIntent(LibraryIntent.LoadData) },
             viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) },
-            onChangeSelectedSongLocalIndex = {
-                selectedSongRemoteIndex = -1
-                selectedSongLocalIndex = it
-                viewModel.processIntent(LibraryIntent.PlayMusic(state.localSongs[it].songId))
-            },
-            onChangeSelectedSongRemoteIndex = {
-                selectedSongRemoteIndex = it
-                selectedSongLocalIndex = -1
-                viewModel.processIntent(LibraryIntent.PlayMusic(state.remoteSongs[it].songId))
+            onPlayMusic = { songId, sourceName, songIds ->
+                viewModel.processIntent(LibraryIntent.PlayMusic(songId, songIds, sourceName))
             }
         )
 

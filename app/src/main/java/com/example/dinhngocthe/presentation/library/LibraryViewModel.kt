@@ -6,6 +6,7 @@ import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
+import com.example.dinhngocthe.data.local.preferences.SongPreferences
 import com.example.dinhngocthe.data.local.preferences.UserPreferences
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
+    private val songPrefs: SongPreferences,
     private val userPrefs: UserPreferences,
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository
@@ -60,7 +62,11 @@ class LibraryViewModel(
 
     private fun handlePlayMusic(intent: LibraryIntent.PlayMusic) {
         viewModelScope.launch {
-            _event.emit(LibraryEvent.PlayMusic(intent.songId))
+            _event.emit(LibraryEvent.PlayMusic(
+                currentSongId = intent.currentSongId,
+                songIds = intent.songIds,
+                currentPlaySourceName = intent.currentPlaySourceName
+            ))
         }
     }
 
@@ -69,6 +75,13 @@ class LibraryViewModel(
         loadLocalSongsAndSaveToRoom()
         getAllPlaylistsByUserId()
         getSongsFromRoom()
+        getCurrentSong()
+    }
+
+    private fun getCurrentSong() {
+        val currentSongId = songPrefs.getSongId()
+        val currentPlaySourceName = songPrefs.getCurrentPlaySourceName()
+        _state.update { it.copy(currentSongId = currentSongId, currentPlaySourceName = currentPlaySourceName) }
     }
 
     private fun getSongsFromRoom() {
