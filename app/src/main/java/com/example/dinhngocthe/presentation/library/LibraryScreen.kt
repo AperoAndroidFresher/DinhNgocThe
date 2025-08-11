@@ -2,6 +2,7 @@ package com.example.dinhngocthe.presentation.library
 
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -72,7 +73,8 @@ fun LibraryScreen(
                     val intent = Intent(context, MusicService::class.java).apply {
                         action = MusicService.ACTION_START
                         putExtra("SONG_ID", event.currentSongId)
-                        putExtra("SONG_IDS", ArrayList<Long>(event.songIds))
+                        putExtra("SOURCE_NAME", event.currentPlaySourceName)
+                        putExtra("SONG_IDS", event.songIds.toLongArray())
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(intent)
@@ -120,6 +122,7 @@ fun LibraryScreen(
             reload = { viewModel.processIntent(LibraryIntent.LoadData) },
             viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) },
             onPlayMusic = { songId, sourceName, songIds ->
+                //Log.d("LibraryScreen", "sondId: $songId sourceName: $sourceName")
                 viewModel.processIntent(LibraryIntent.PlayMusic(songId, songIds, sourceName))
             }
         )

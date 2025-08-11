@@ -2,7 +2,7 @@ package com.example.dinhngocthe.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 class LoginViewModel(
     private val userRepository: UserRepository,
-    private val userPreferences: UserPreferences
+    private val userDataStore: UserDataStore
 ) : ViewModel() {
     val tag = "LoginViewModel"
     private val _state = MutableStateFlow(LoginState())
@@ -41,16 +41,15 @@ class LoginViewModel(
     ) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             val user = withContext(Dispatchers.IO) {
                 userRepository.getUserByUsernameAndPassword(username, password)
             }
-
             if (user == null) {
                 _event.emit(LoginEvent.ShowError("Sai tên đăng nhập hoặc mật khẩu!"))
             } else {
-                userPreferences.setUserId(user.userId)
-                userPreferences.setRememberMe(rememberMe)
+
+                userDataStore.setUserId(user.userId)
+                userDataStore.setRememberMe(rememberMe)
                 _event.emit(LoginEvent.NavigateToHome)
             }
             _state.update { it.copy(isLoading = false) }
@@ -58,11 +57,14 @@ class LoginViewModel(
     }
 
     fun checkAutoLogin() {
-        val remembered = userPreferences.isRememberMe()
-        val userId = userPreferences.getUserId()
-        if (remembered == true && userId != null) {
-            viewModelScope.launch {
-                _event.emit(LoginEvent.NavigateToHome)
+        viewModelScope.launch(Dispatchers.IO) {
+            val remembered = userDataStore.isRememberMe()
+            val userId = userDataStore.getUserId()
+
+            if (remembered && userId != null) {
+                withContext(Dispatchers.Main) {
+                    _event.emit(LoginEvent.NavigateToHome)
+                }
             }
         }
     }

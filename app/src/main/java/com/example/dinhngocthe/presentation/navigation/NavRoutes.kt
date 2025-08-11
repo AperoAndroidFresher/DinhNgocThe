@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.entry
@@ -10,6 +11,8 @@ import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.home.HomeScreen
 import com.example.dinhngocthe.presentation.library.LibraryScreen
 import com.example.dinhngocthe.presentation.login.LoginScreen
+import com.example.dinhngocthe.presentation.miniplayer.MiniPlayer
+import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
 import com.example.dinhngocthe.presentation.profile.ProfileScreen
 import com.example.dinhngocthe.presentation.signup.SignUpScreen
@@ -30,16 +33,22 @@ fun NavRoutes(
     Scaffold(
         bottomBar = {
             if (currentRoute in items.map { it.route }) {
-                BottomNavBar(
-                    currentRoute = currentRoute,
-                    onItemClick = { destination ->
-                        if (destination != backStack.lastOrNull()) {
-                            backStack.clear()
-                            backStack.add(destination)
-                        }
-                    },
-                    items
-                )
+                Column {
+                    MiniPlayer(
+                        navigateToMusicPlayerScreen = { backStack.add(Destination.MusicPlayerRoute) }
+                    )
+
+                    BottomNavBar(
+                        currentRoute = currentRoute,
+                        onItemClick = { destination ->
+                            if (destination != backStack.lastOrNull()) {
+                                backStack.clear()
+                                backStack.add(destination)
+                            }
+                        },
+                        items
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -94,6 +103,13 @@ fun NavRoutes(
 
                 entry<Destination.PlaylistRoute> {
                     MyPlaylistScreen(innerPadding = innerPadding)
+                }
+
+                entry<Destination.MusicPlayerRoute> {
+                    MusicPlayerScreen(
+                        innerPadding = innerPadding,
+                        onBack = { backStack.removeLastOrNull() }
+                    )
                 }
             }
         )

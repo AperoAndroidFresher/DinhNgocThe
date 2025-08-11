@@ -2,7 +2,7 @@ package com.example.dinhngocthe.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ProfileViewModel(
-    private val userPrefs: UserPreferences,
+    private val userPrefs: UserDataStore,
     private val userRepository: UserRepository
 ) : ViewModel() {
     val tag = "ProfileViewModel"

@@ -12,14 +12,20 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat.MediaStyle
 import android.support.v4.media.session.MediaSessionCompat
+import android.util.Log
 import com.example.dinhngocthe.MainActivity
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.SongDao
+import com.example.dinhngocthe.data.local.datastore.MusicDataStore
 import com.example.dinhngocthe.data.local.entities.Song
-import com.example.dinhngocthe.data.local.preferences.SongPreferences
+import com.example.dinhngocthe.service.musicstate.MusicState
+import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class MusicService : Service() {
@@ -27,9 +33,10 @@ class MusicService : Service() {
     private var mediaPlayer: MediaPlayer? = null
 
     private lateinit var songDao: SongDao
-    private lateinit var songPrefs: SongPreferences
+    private lateinit var musicDataStore: MusicDataStore
     private var playlist: List<Song> = emptyList()
     private var currentTrackIndex = 0
+    private var updateProgressJob: Job? = null
 
     companion object {
         const val CHANNEL_ID = "music_channel"
@@ -46,11 +53,8 @@ class MusicService : Service() {
         super.onCreate()
         mediaSession = MediaSessionCompat(this, "MusicService")
         songDao = LocalDatabase.getInstance(application).songDao()
-        songPrefs = SongPreferences(this)
+        musicDataStore = MusicDataStore(this)
         createNotificationChannel()
-        CoroutineScope(Dispatchers.IO).launch {
-            playlist = songDao.getAllSongsService()
-        }
     }
 
     private fun createNotificationChannel() {
@@ -80,7 +84,8 @@ class MusicService : Service() {
                 currentTrackIndex = -1
                 stopForeground(true)
                 stopSelf()
-                songPrefs.removeSongId()
+                removeCurrentSongFromDataStore()
+                MusicStateHolder.closePlayMusic()
             }
             ACTION_START -> {
                 start(intent)
@@ -91,19 +96,52 @@ class MusicService : Service() {
 
     private fun start(intent: Intent) {
         val songId = intent.getLongExtra("SONG_ID", -1)
-        if (playlist.isEmpty()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                playlist = songDao.getAllSongsService()
-                if (playlist.isNotEmpty()) {
-                    updateCurrentTrackIndex(songId)
-                    prepareAndStart()
-                    startForeground(NOTIFICATION_ID, buildNotification())
-                }
-            }
-        } else {
+        val sourceName = intent.getStringExtra("SOURCE_NAME") ?: ""
+        val songIds = intent.getLongArrayExtra("SONG_IDS")  ?: longArrayOf()
+        CoroutineScope(Dispatchers.IO).launch {
+            playlist = songDao.getSongsBySongId(songIds.toList())
             updateCurrentTrackIndex(songId)
+            updateCurrentSongIdToDataStore()
+            updateCurrentPlaySourceNameToDataStore(sourceName)
             prepareAndStart()
             startForeground(NOTIFICATION_ID, buildNotification())
+            val musicState = MusicState(
+                songId = playlist[currentTrackIndex].songId,
+                currentPlaySourceName = sourceName,
+                coverArtUri = playlist[currentTrackIndex].coverArtUri,
+                singer = playlist[currentTrackIndex].singer,
+                progress = 0f,
+                songName = playlist[currentTrackIndex].songName,
+                duration = playlist[currentTrackIndex].duration,
+                isPlaying = true,
+                isActive = true,
+                isShuffle = false,
+                isRepeat = false
+            )
+            MusicStateHolder.updateState(musicState)
+        }
+    }
+
+    private fun startUpdatingProgress() {
+        updateProgressJob?.cancel()
+        updateProgressJob = CoroutineScope(Dispatchers.Main).launch {
+            while (isActive && mediaPlayer?.isPlaying == true) {
+                if (mediaPlayer == null || mediaPlayer?.isPlaying != true) {
+                    continue
+                }
+                val position = mediaPlayer?.currentPosition ?: 0
+                val duration = mediaPlayer?.duration ?: 0
+                val progress = if (duration > 0) position.toFloat() / duration else 0f
+
+                val currentMusicState = MusicStateHolder.state.value
+                MusicStateHolder.updateState(
+                    currentMusicState.copy(
+                        progress = progress,
+                        duration = position.toLong()
+                    )
+                )
+                delay(500)
+            }
         }
     }
 
@@ -114,6 +152,7 @@ class MusicService : Service() {
             setOnPreparedListener {
                 start()
                 updateNotification()
+                startUpdatingProgress()
             }
             setOnCompletionListener {
                 nextTrack()
@@ -122,25 +161,39 @@ class MusicService : Service() {
         }
     }
 
-    private fun updateCurrentTrackIndex(songId: Long) {
-        if (songId == -1L) {
-            currentTrackIndex = 0
-            return
+    private fun removeCurrentSongFromDataStore() {
+        CoroutineScope(Dispatchers.IO).launch {
+            musicDataStore.removeSongId()
+            musicDataStore.removeCurrentPlaySourceName()
         }
+    }
+
+    private fun updateCurrentTrackIndex(songId: Long) {
         val index = playlist.indexOfFirst { it.songId == songId }
         currentTrackIndex = if (index != -1) index else 0
     }
 
-    private fun updateCurrentSongId() {
-        songPrefs.setSongId(playlist[currentTrackIndex].songId)
+    private fun updateCurrentSongIdToDataStore() {
+        CoroutineScope(Dispatchers.IO).launch {
+            musicDataStore.setSongId(playlist[currentTrackIndex].songId)
+        }
+    }
+
+    private fun updateCurrentPlaySourceNameToDataStore(sourceName: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            musicDataStore.setCurrentPlaySourceName(sourceName)
+        }
     }
 
     private fun togglePlayPause() {
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.pause()
+                MusicStateHolder.updateIsPlayingState(false)
             } else {
                 it.start()
+                MusicStateHolder.updateIsPlayingState(true)
+                startUpdatingProgress()
             }
             updateNotification()
         }
@@ -149,15 +202,27 @@ class MusicService : Service() {
     private fun nextTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size
-        updateCurrentSongId()
+        updateCurrentSongIdToDataStore()
         prepareAndStart()
+        MusicStateHolder.updateNextPreviousMusic(
+            playlist[currentTrackIndex].songId,
+            playlist[currentTrackIndex].singer,
+            playlist[currentTrackIndex].songName,
+            playlist[currentTrackIndex].duration
+        )
     }
 
     private fun previousTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = if (currentTrackIndex - 1 < 0) playlist.size - 1 else currentTrackIndex - 1
-        updateCurrentSongId()
+        updateCurrentSongIdToDataStore()
         prepareAndStart()
+        MusicStateHolder.updateNextPreviousMusic(
+            playlist[currentTrackIndex].songId,
+            playlist[currentTrackIndex].singer,
+            playlist[currentTrackIndex].songName,
+            playlist[currentTrackIndex].duration
+        )
     }
 
     private fun buildNotification(): Notification {
@@ -219,6 +284,7 @@ class MusicService : Service() {
         mediaPlayer?.release()
         mediaPlayer = null
         mediaSession.release()
+        updateProgressJob?.cancel()
         super.onDestroy()
     }
 

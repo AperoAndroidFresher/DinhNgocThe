@@ -5,8 +5,8 @@ import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
-import com.example.dinhngocthe.data.local.preferences.SongPreferences
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.MusicDataStore
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.repository.SongRepositoryImpl
 import com.example.dinhngocthe.data.repository.UserRepositoryImpl
@@ -15,6 +15,8 @@ import com.example.dinhngocthe.domain.repository.SongRepository
 import com.example.dinhngocthe.domain.repository.UserRepository
 import com.example.dinhngocthe.presentation.library.LibraryViewModel
 import com.example.dinhngocthe.presentation.login.LoginViewModel
+import com.example.dinhngocthe.presentation.miniplayer.MiniPlayerViewModel
+import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerViewModel
 import com.example.dinhngocthe.presentation.playlist.PlaylistViewModel
 import com.example.dinhngocthe.presentation.profile.ProfileViewModel
 import com.example.dinhngocthe.presentation.signup.SignUpViewModel
@@ -23,10 +25,9 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
-
-    // Preferences
-    single { UserPreferences(androidContext()) }
-    single { SongPreferences(androidContext()) }
+    // Data Store
+    single<UserDataStore> { UserDataStore(get()) }
+    single<MusicDataStore> { MusicDataStore(get()) }
 
     // DataSources
     single<DeviceSongDataSource> { DeviceSongDataSourceImpl() }
@@ -45,8 +46,11 @@ val appModule = module {
 
     // ViewModels
     viewModel { LoginViewModel(get(), get()) }
-    viewModel { LibraryViewModel(get(), get(), get(), get()) }
+    viewModel { LibraryViewModel(get(),get(), get(), get()) }
     viewModel { PlaylistViewModel(get(), get()) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
+    viewModel { MiniPlayerViewModel() }
+    viewModel { MusicPlayerViewModel() }
 }
+

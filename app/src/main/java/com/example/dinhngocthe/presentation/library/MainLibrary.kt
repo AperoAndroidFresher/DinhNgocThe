@@ -111,7 +111,7 @@ fun MainLibrary(
                             onPlayMusic = {
                                 onPlayMusic(
                                     it,
-                                    "local",
+                                    "remote",
                                     remoteSongs.map { it.songId }
                                 )
                             }

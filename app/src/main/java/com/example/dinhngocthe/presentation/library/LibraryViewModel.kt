@@ -2,14 +2,15 @@ package com.example.dinhngocthe.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dinhngocthe.data.local.datastore.MusicDataStore
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
-import com.example.dinhngocthe.data.local.preferences.SongPreferences
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
+import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,8 +24,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
-    private val songPrefs: SongPreferences,
-    private val userPrefs: UserPreferences,
+    private val musicDataStore: MusicDataStore,
+    private val userDataStore: UserDataStore,
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
@@ -75,13 +76,15 @@ class LibraryViewModel(
         loadLocalSongsAndSaveToRoom()
         getAllPlaylistsByUserId()
         getSongsFromRoom()
-        getCurrentSong()
+        getCurrentSongIdAndSourceName()
     }
 
-    private fun getCurrentSong() {
-        val currentSongId = songPrefs.getSongId()
-        val currentPlaySourceName = songPrefs.getCurrentPlaySourceName()
-        _state.update { it.copy(currentSongId = currentSongId, currentPlaySourceName = currentPlaySourceName) }
+    private fun getCurrentSongIdAndSourceName() {
+        viewModelScope.launch {
+            MusicStateHolder.state.collectLatest { musicState ->
+                _state.update { it.copy(currentSongId = musicState.songId, currentPlaySourceName = musicState.currentPlaySourceName) }
+            }
+        }
     }
 
     private fun getSongsFromRoom() {
@@ -99,7 +102,7 @@ class LibraryViewModel(
 
     private fun getAllPlaylistsByUserId() {
         viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId()!!).collectLatest { playlists: List<Playlist> ->
+            playlistRepository.getAllPlaylistsByUserId(userDataStore.getUserId()!!).collectLatest { playlists: List<Playlist> ->
                 _state.update { it.copy(playlists = playlists) }
             }
         }

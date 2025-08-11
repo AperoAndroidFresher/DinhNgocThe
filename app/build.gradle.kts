@@ -103,4 +103,7 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
     implementation(libs.androidx.media)
+
+    // DataStore Preferences
+    implementation(libs.androidx.datastore.preferences)
 }
