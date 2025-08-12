@@ -47,6 +47,10 @@ fun MainMusicPlayer(
     songName: String,
     singer: String,
     iconPlayPause: Int,
+    enableShuffle: Boolean,
+    enablePrevious: Boolean,
+    enableNext: Boolean,
+    enableRepeat: Boolean,
     modifier: Modifier = Modifier,
     onPlayPause: () -> Unit,
     onNextMusic: () -> Unit,
@@ -138,7 +142,8 @@ fun MainMusicPlayer(
         ) {
             IconButton(
                 onClick = { },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = enableShuffle
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_shuffle),
@@ -148,7 +153,8 @@ fun MainMusicPlayer(
 
             IconButton(
                 onClick = { onPreviousMusic() },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = enablePrevious
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_previous_music),
@@ -175,7 +181,8 @@ fun MainMusicPlayer(
 
             IconButton(
                 onClick = { onNextMusic() },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = enableNext
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_next_music),
@@ -185,7 +192,8 @@ fun MainMusicPlayer(
 
             IconButton(
                 onClick = { },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = enableRepeat
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_repeat),

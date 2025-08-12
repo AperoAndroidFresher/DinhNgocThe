@@ -28,6 +28,7 @@ import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfN
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
 import com.example.dinhngocthe.presentation.components.InputField
 import com.example.dinhngocthe.service.MusicService
+import com.example.dinhngocthe.service.musicstate.MusicCloseSignal
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
@@ -72,13 +73,13 @@ fun LibraryScreen(
         viewModel.event.collect { event ->
             when(event) {
                 LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
+
                 is LibraryEvent.PlayMusic -> {
-                    songMenuIndex = -1
                     val intent = Intent(context, MusicService::class.java).apply {
                         action = MusicService.ACTION_CLOSE
                     }
                     context.startService(intent)
-                    delay(200)
+                    MusicCloseSignal.awaitClose().await()
                     MusicPlayerLibrary.playMusic(event.song, event.currentSongSourceName, context)
                 }
             }

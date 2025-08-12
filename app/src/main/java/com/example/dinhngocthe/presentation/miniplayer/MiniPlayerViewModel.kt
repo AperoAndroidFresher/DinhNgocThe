@@ -40,14 +40,12 @@ class MiniPlayerViewModel : ViewModel() {
     private fun handleCloseMusic() {
         viewModelScope.launch {
             _event.emit(MiniPlayerEvent.CloseMusic)
-            MusicPlayerLibrary.stopMusic()
         }
     }
 
     private fun handlePlayPauseMusic() {
         viewModelScope.launch {
             _event.emit(MiniPlayerEvent.PlayPauseMusic)
-            MusicPlayerLibrary.playPauseMusic()
         }
     }
 

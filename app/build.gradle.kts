@@ -108,5 +108,4 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     implementation("com.github.SmartToolFactory:Compose-Colorful-Sliders:1.2.2")
-
 }

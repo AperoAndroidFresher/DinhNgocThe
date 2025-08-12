@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
+import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
 import com.example.dinhngocthe.service.MusicService
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
 import org.koin.androidx.compose.koinViewModel
@@ -49,6 +50,9 @@ fun MyPlaylistScreen(
         viewModel.event.collect { event ->
             when(event) {
                 is PlaylistEvent.PlayMusic -> {
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.stopMusic()
+                    }
                     val intent = Intent(context, MusicService::class.java).apply {
                         action = MusicService.ACTION_START
                         putExtra("SONG_ID", event.currentSongId)

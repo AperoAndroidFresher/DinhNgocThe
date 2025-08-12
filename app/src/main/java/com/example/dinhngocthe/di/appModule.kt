@@ -19,6 +19,7 @@ import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerViewModel
 import com.example.dinhngocthe.presentation.playlist.PlaylistViewModel
 import com.example.dinhngocthe.presentation.profile.ProfileViewModel
 import com.example.dinhngocthe.presentation.signup.SignUpViewModel
+import com.example.dinhngocthe.presentation.splash.SplashViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -50,5 +51,6 @@ val appModule = module {
     viewModel { SignUpViewModel(get()) }
     viewModel { MiniPlayerViewModel() }
     viewModel { MusicPlayerViewModel() }
+    viewModel { SplashViewModel(get()) }
 }
 

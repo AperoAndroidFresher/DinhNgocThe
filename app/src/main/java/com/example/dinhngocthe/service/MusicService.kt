@@ -38,6 +38,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.InputStream
 import androidx.core.graphics.createBitmap
+import com.example.dinhngocthe.service.musicstate.MusicCloseSignal
 
 class MusicService : Service() {
     private lateinit var mediaSession: MediaSessionCompat
@@ -90,10 +91,10 @@ class MusicService : Service() {
                 previousTrack()
             }
             ACTION_CLOSE -> {
-                currentTrackIndex = -1
+                MusicStateHolder.closePlayMusic()
                 stopForeground(true)
                 stopSelf()
-                MusicStateHolder.closePlayMusic()
+                MusicCloseSignal.notifyClosed()
             }
             ACTION_START -> {
                 start(intent)
@@ -106,6 +107,7 @@ class MusicService : Service() {
         val songId = intent.getLongExtra("SONG_ID", -1)
         val sourceName = intent.getStringExtra("SOURCE_NAME") ?: ""
         val songIds = intent.getLongArrayExtra("SONG_IDS")  ?: longArrayOf()
+
         CoroutineScope(Dispatchers.IO).launch {
             playlist = songDao.getSongsBySongId(songIds.toList())
             updateCurrentTrackIndex(songId)
@@ -122,7 +124,11 @@ class MusicService : Service() {
                 isPlaying = true,
                 isActive = true,
                 isShuffle = false,
-                isRepeat = false
+                isRepeat = false,
+                enableNext = true,
+                enableShuffle = true,
+                enableRepeat = true,
+                enablePrevious = true
             )
             MusicStateHolder.updateState(musicState)
         }
@@ -187,7 +193,6 @@ class MusicService : Service() {
     }
 
     private fun nextTrack() {
-        if (playlist.isEmpty()) return
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size
         prepareAndStart()
         val song = playlist[currentTrackIndex]
@@ -205,7 +210,6 @@ class MusicService : Service() {
     }
 
     private fun previousTrack() {
-        if (playlist.isEmpty()) return
         currentTrackIndex = if (currentTrackIndex - 1 < 0) playlist.size - 1 else currentTrackIndex - 1
         prepareAndStart()
         val song = playlist[currentTrackIndex]
@@ -216,7 +220,8 @@ class MusicService : Service() {
                 singer = song.singer,
                 songName = song.songName,
                 duration = song.duration,
-                coverArtUri = song.coverArtUri
+                coverArtUri = song.coverArtUri,
+                isPlaying = true
             )
         )
     }
@@ -240,10 +245,6 @@ class MusicService : Service() {
             this, 3, Intent(this, MusicService::class.java).setAction(ACTION_CLOSE),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val mainIntent = PendingIntent.getActivity(
-            this, 4, Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
 
         val contentTitle = "Apero Music   ${currentTrackIndex + 1}/${playlist.size}"
         val contentText = currentSong?.let {
@@ -255,6 +256,15 @@ class MusicService : Service() {
         } else {
             loadBitmapFromUri(application, currentSong.coverArtUri)
         }
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("DESTINATION", "music_player")
+        }
+        val mainIntent = PendingIntent.getActivity(
+            this, 4, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(contentTitle)

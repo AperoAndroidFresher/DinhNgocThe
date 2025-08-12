@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
+import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
 import com.example.dinhngocthe.service.MusicService
 import org.koin.androidx.compose.koinViewModel
 
@@ -47,18 +48,26 @@ fun MusicPlayerScreen(
         viewModel.event.collect { event ->
             when (event) {
                 MusicPlayerEvent.CloseMusic -> {
-                    onBack()
-                    val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_CLOSE
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.stopMusic()
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_CLOSE
+                        }
+                        context.startService(intent)
                     }
-                    context.startService(intent)
+                    onBack()
                 }
 
                 MusicPlayerEvent.PlayPauseMusic -> {
-                    val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_PLAY_PAUSE
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.playPauseMusic()
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_PLAY_PAUSE
+                        }
+                        context.startService(intent)
                     }
-                    context.startService(intent)
                 }
 
                 MusicPlayerEvent.NextMusic -> {
@@ -67,6 +76,7 @@ fun MusicPlayerScreen(
                     }
                     context.startService(intent)
                 }
+
                 MusicPlayerEvent.PreviousMusic -> {
                     val intent = Intent(context, MusicService::class.java).apply {
                         action = MusicService.ACTION_PREVIOUS
@@ -98,6 +108,10 @@ fun MusicPlayerScreen(
                 songName = state.songName,
                 singer = state.singer,
                 iconPlayPause = iconPlayPause,
+                enableShuffle = state.enableShuffle,
+                enablePrevious = state.enablePrevious,
+                enableNext = state.enableNext,
+                enableRepeat = state.enableRepeat,
                 onPlayPause = { viewModel.processIntent(MusicPlayerIntent.PlayPauseMusic) },
                 onNextMusic = { viewModel.processIntent(MusicPlayerIntent.NextMusic) },
                 onPreviousMusic = { viewModel.processIntent(MusicPlayerIntent.PreviousMusic) }

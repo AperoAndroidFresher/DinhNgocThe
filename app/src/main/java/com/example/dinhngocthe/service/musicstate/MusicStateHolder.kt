@@ -13,11 +13,11 @@ object MusicStateHolder {
         _state.value = state
     }
 
-    fun updateIsPlayingState(isPlaying: Boolean) {
-        _state.update { it.copy(isPlaying = isPlaying) }
-    }
-
     fun closePlayMusic() {
         _state.value = MusicState()
+    }
+
+    fun updateIsPlayingState(isPlaying: Boolean) {
+        _state.update { it.copy(isPlaying = isPlaying) }
     }
 }

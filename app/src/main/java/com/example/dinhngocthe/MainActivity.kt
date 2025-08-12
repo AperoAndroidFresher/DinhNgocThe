@@ -19,26 +19,35 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
-            var splashVisible by remember { mutableStateOf(true) }
+            var isSplash by remember { mutableStateOf(true) }
+            var isLogged by remember { mutableStateOf(false) }
             WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isDarkTheme
 
-            LaunchedEffect(Unit) {
-                delay(2000)
-                splashVisible = false
-            }
+            val destination = receiverIntent()
 
             AppTheme(isDarkTheme) {
-                if (splashVisible) {
-                    SplashScreen()
+                if (isSplash) {
+                    SplashScreen(
+                        navigateToApp = {
+                            isLogged = it
+                            isSplash = false
+                        }
+                    )
                 } else {
                     NavRoutes(
                         onChangeMode = { isDarkTheme = !isDarkTheme },
-                        isDarkTheme
+                        isDarkTheme = isDarkTheme,
+                        isLogged = isLogged
                     )
                 }
             }
         }
+    }
+
+    private fun receiverIntent(): String {
+        return intent.getStringExtra("DESTINATION") ?: ""
     }
 }

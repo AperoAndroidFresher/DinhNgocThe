@@ -55,17 +55,4 @@ class LoginViewModel(
             _state.update { it.copy(isLoading = false) }
         }
     }
-
-    fun checkAutoLogin() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val remembered = userDataStore.isRememberMe()
-            val userId = userDataStore.getUserId()
-
-            if (remembered && userId != null) {
-                withContext(Dispatchers.Main) {
-                    _event.emit(LoginEvent.NavigateToHome)
-                }
-            }
-        }
-    }
 }

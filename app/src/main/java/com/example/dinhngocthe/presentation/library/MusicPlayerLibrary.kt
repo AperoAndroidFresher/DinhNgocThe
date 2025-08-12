@@ -44,7 +44,11 @@ object MusicPlayerLibrary {
             isPlaying = true,
             isActive = true,
             isShuffle = false,
-            isRepeat = false
+            isRepeat = false,
+            enableNext = false,
+            enablePrevious = false,
+            enableRepeat = false,
+            enableShuffle = false
         )
         MusicStateHolder.updateState(musicState)
     }
@@ -90,5 +94,9 @@ object MusicPlayerLibrary {
                 Log.e("MusicService", e.printStackTrace().toString())
             }
         }
+    }
+
+    fun isActive(): Boolean {
+        return mediaPlayer != null
     }
 }

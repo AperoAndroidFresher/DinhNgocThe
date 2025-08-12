@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
+import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
 import com.example.dinhngocthe.service.MusicService
 import com.example.dinhngocthe.utils.formatDuration
 import org.koin.androidx.compose.koinViewModel
@@ -51,17 +52,25 @@ fun MiniPlayer(
         viewModel.event.collect { event ->
             when(event) {
                 MiniPlayerEvent.PlayPauseMusic -> {
-                    val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_PLAY_PAUSE
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.playPauseMusic()
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_PLAY_PAUSE
+                        }
+                        context.startService(intent)
                     }
-                    context.startService(intent)
                 }
 
                 MiniPlayerEvent.CloseMusic -> {
-                    val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_CLOSE
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.stopMusic()
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_CLOSE
+                        }
+                        context.startService(intent)
                     }
-                    context.startService(intent)
                 }
             }
         }

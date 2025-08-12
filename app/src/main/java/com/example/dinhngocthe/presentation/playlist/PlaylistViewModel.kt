@@ -58,7 +58,6 @@ class PlaylistViewModel(
     }
 
     private fun handlePlayMusic(intent: PlaylistIntent.PlayMusic) {
-        MusicPlayerLibrary.stopMusic()
         viewModelScope.launch {
             _event.emit(PlaylistEvent.PlayMusic(
                 currentSongId = intent.songId,

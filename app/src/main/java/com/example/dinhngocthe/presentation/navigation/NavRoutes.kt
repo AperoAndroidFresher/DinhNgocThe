@@ -20,9 +20,11 @@ import com.example.dinhngocthe.presentation.signup.SignUpScreen
 @Composable
 fun NavRoutes(
     onChangeMode: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isLogged: Boolean,
 ) {
-    var backStack = rememberNavBackStack(Destination.LoginRoute)
+    val firstRoute = if (isLogged) Destination.HomeRoute else Destination.LoginRoute
+    var backStack = rememberNavBackStack(firstRoute)
     val currentRoute = backStack.lastOrNull() as Destination
     val items = listOf<BottomNavBarItem>(
         BottomNavBarItem(0, "Home", R.drawable.ic_home, Destination.HomeRoute),

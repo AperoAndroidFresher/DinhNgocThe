@@ -61,14 +61,12 @@ class MusicPlayerViewModel : ViewModel() {
         viewModelScope.launch {
             _event.emit(MusicPlayerEvent.PlayPauseMusic)
         }
-        MusicPlayerLibrary.playPauseMusic()
     }
 
     private fun handleCloseMusic() {
         viewModelScope.launch {
             _event.emit(MusicPlayerEvent.CloseMusic)
         }
-        MusicPlayerLibrary.stopMusic()
     }
 
     private fun handleLoadData() {
