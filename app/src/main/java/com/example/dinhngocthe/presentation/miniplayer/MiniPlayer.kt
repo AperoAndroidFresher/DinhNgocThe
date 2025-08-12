@@ -74,7 +74,7 @@ fun MiniPlayer(
                 .fillMaxWidth()
                 .padding(horizontal = 5.dp)
                 .clip(RoundedCornerShape(7.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable { navigateToMusicPlayerScreen() }
         ) {
             Box(
@@ -101,7 +101,7 @@ fun MiniPlayer(
                                 .padding(10.dp),
                             painter = painterResource(icPlayPause),
                             contentDescription = "Press to play or pause music",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
 
@@ -110,7 +110,7 @@ fun MiniPlayer(
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 14.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(end = 120.dp)
@@ -128,7 +128,7 @@ fun MiniPlayer(
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 14.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
 
                     IconButton(
@@ -143,7 +143,7 @@ fun MiniPlayer(
                                 .padding(7.dp),
                             painter = painterResource(R.drawable.ic_close_music),
                             contentDescription = "Press to close music",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -152,8 +152,8 @@ fun MiniPlayer(
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).height(2.5.dp),
                 progress = { state.progress },
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f)
             )
         }
     }

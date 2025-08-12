@@ -5,14 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -116,6 +116,7 @@ fun HeaderMusicPlayer(
     Spacer(Modifier.size(20.dp))
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMusicPlayer(
     modifier: Modifier = Modifier
@@ -161,26 +162,21 @@ fun MainMusicPlayer(
 
         Slider(
             value = progress,
-            onValueChange = { progress = it },
-            modifier = modifier,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-            )
+            onValueChange = { progress = it }
         )
     }
 }
 
-@Preview
-@Composable
-private fun PrevHeaderMusicPlayerScreen() {
-    MusicPlayerScreen(
-        innerPadding = PaddingValues(top = 10.dp),
-        onBack = {}
-    )
-}
+//@Preview
+//@Composable
+//private fun PrevHeaderMusicPlayerScreen() {
+//    MusicPlayerScreen(
+//        innerPadding = PaddingValues(top = 10.dp),
+//        onBack = {}
+//    )
+//}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 private fun PrevMainMusicPlayerScreen(modifier: Modifier = Modifier) {
@@ -218,15 +214,30 @@ private fun PrevMainMusicPlayerScreen(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.size(20.dp))
 
-        Slider(
-            value = 0f,
-            onValueChange = { },
-            modifier = modifier.height(10.dp),
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-            )
-        )
+//        Slider(
+//            value = 0f,
+//            onValueChange = { },
+//            modifier = modifier.height(10.dp),
+//            colors = SliderDefaults.colors(
+//                thumbColor = MaterialTheme.colorScheme.primary,
+//                activeTrackColor = MaterialTheme.colorScheme.primary,
+//                inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+//            ),
+//            track = { sliderState ->
+//                SliderDefaults.Track(
+//                    sliderState = sliderState,
+//                    modifier = Modifier
+//                        .height(8.dp)
+//                        .clip(RoundedCornerShape(5))
+//                )
+//            },
+//            thumb = {
+//                Box(
+//                    modifier = Modifier
+//                        .size(11.dp)
+//                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+//                )
+//            }
+//        )
     }
 }
