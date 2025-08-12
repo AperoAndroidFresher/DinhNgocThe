@@ -5,7 +5,6 @@ import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
-import com.example.dinhngocthe.data.local.datastore.MusicDataStore
 import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.repository.SongRepositoryImpl
@@ -27,7 +26,6 @@ import org.koin.dsl.module
 val appModule = module {
     // Data Store
     single<UserDataStore> { UserDataStore(get()) }
-    single<MusicDataStore> { MusicDataStore(get()) }
 
     // DataSources
     single<DeviceSongDataSource> { DeviceSongDataSourceImpl() }

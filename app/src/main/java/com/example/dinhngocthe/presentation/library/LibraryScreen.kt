@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.library
 
+import android.app.Application
 import android.content.Intent
 import android.os.Build
 import android.util.Log
@@ -25,7 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
+import com.example.dinhngocthe.presentation.components.InputField
 import com.example.dinhngocthe.service.MusicService
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -70,17 +73,13 @@ fun LibraryScreen(
             when(event) {
                 LibraryEvent.NavigateToPlaylist -> navigateToPlaylist()
                 is LibraryEvent.PlayMusic -> {
+                    songMenuIndex = -1
                     val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_START
-                        putExtra("SONG_ID", event.currentSongId)
-                        putExtra("SOURCE_NAME", event.currentPlaySourceName)
-                        putExtra("SONG_IDS", event.songIds.toLongArray())
+                        action = MusicService.ACTION_CLOSE
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        context.startForegroundService(intent)
-                    } else {
-                        context.startService(intent)
-                    }
+                    context.startService(intent)
+                    delay(200)
+                    MusicPlayerLibrary.playMusic(event.song, event.currentSongSourceName, context)
                 }
             }
         }
@@ -121,9 +120,8 @@ fun LibraryScreen(
             },
             reload = { viewModel.processIntent(LibraryIntent.LoadData) },
             viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) },
-            onPlayMusic = { songId, sourceName, songIds ->
-                //Log.d("LibraryScreen", "sondId: $songId sourceName: $sourceName")
-                viewModel.processIntent(LibraryIntent.PlayMusic(songId, songIds, sourceName))
+            onPlayMusic = { song, currentPlaySourceName ->
+                viewModel.processIntent(LibraryIntent.PlayMusic(song, currentPlaySourceName))
             }
         )
 

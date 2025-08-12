@@ -5,19 +5,28 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat.MediaStyle
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import androidx.core.content.ContextCompat
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.example.dinhngocthe.MainActivity
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.SongDao
-import com.example.dinhngocthe.data.local.datastore.MusicDataStore
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.service.musicstate.MusicState
 import com.example.dinhngocthe.service.musicstate.MusicStateHolder
@@ -27,13 +36,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.InputStream
+import androidx.core.graphics.createBitmap
 
 class MusicService : Service() {
     private lateinit var mediaSession: MediaSessionCompat
     private var mediaPlayer: MediaPlayer? = null
 
     private lateinit var songDao: SongDao
-    private lateinit var musicDataStore: MusicDataStore
     private var playlist: List<Song> = emptyList()
     private var currentTrackIndex = 0
     private var updateProgressJob: Job? = null
@@ -53,7 +63,6 @@ class MusicService : Service() {
         super.onCreate()
         mediaSession = MediaSessionCompat(this, "MusicService")
         songDao = LocalDatabase.getInstance(application).songDao()
-        musicDataStore = MusicDataStore(this)
         createNotificationChannel()
     }
 
@@ -84,7 +93,6 @@ class MusicService : Service() {
                 currentTrackIndex = -1
                 stopForeground(true)
                 stopSelf()
-                removeCurrentSongFromDataStore()
                 MusicStateHolder.closePlayMusic()
             }
             ACTION_START -> {
@@ -101,8 +109,6 @@ class MusicService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             playlist = songDao.getSongsBySongId(songIds.toList())
             updateCurrentTrackIndex(songId)
-            updateCurrentSongIdToDataStore()
-            updateCurrentPlaySourceNameToDataStore(sourceName)
             prepareAndStart()
             startForeground(NOTIFICATION_ID, buildNotification())
             val musicState = MusicState(
@@ -125,22 +131,22 @@ class MusicService : Service() {
     private fun startUpdatingProgress() {
         updateProgressJob?.cancel()
         updateProgressJob = CoroutineScope(Dispatchers.Main).launch {
-            while (isActive && mediaPlayer?.isPlaying == true) {
-                if (mediaPlayer == null || mediaPlayer?.isPlaying != true) {
-                    continue
-                }
-                val position = mediaPlayer?.currentPosition ?: 0
-                val duration = mediaPlayer?.duration ?: 0
-                val progress = if (duration > 0) position.toFloat() / duration else 0f
+            try {
+                while (isActive && mediaPlayer?.isPlaying == true) {
+                    val position = mediaPlayer?.currentPosition ?: 0
+                    val duration = mediaPlayer?.duration ?: 0
+                    val progress = if (duration > 0) position.toFloat() / duration else 0f
 
-                val currentMusicState = MusicStateHolder.state.value
-                MusicStateHolder.updateState(
-                    currentMusicState.copy(
-                        progress = progress,
-                        duration = position.toLong()
+                    val currentMusicState = MusicStateHolder.state.value
+                    MusicStateHolder.updateState(
+                        currentMusicState.copy(
+                            progress = progress
+                        )
                     )
-                )
-                delay(500)
+                    delay(500)
+                }
+            } catch(e: Exception) {
+                Log.e("MusicService", e.printStackTrace().toString())
             }
         }
     }
@@ -161,28 +167,9 @@ class MusicService : Service() {
         }
     }
 
-    private fun removeCurrentSongFromDataStore() {
-        CoroutineScope(Dispatchers.IO).launch {
-            musicDataStore.removeSongId()
-            musicDataStore.removeCurrentPlaySourceName()
-        }
-    }
-
     private fun updateCurrentTrackIndex(songId: Long) {
         val index = playlist.indexOfFirst { it.songId == songId }
         currentTrackIndex = if (index != -1) index else 0
-    }
-
-    private fun updateCurrentSongIdToDataStore() {
-        CoroutineScope(Dispatchers.IO).launch {
-            musicDataStore.setSongId(playlist[currentTrackIndex].songId)
-        }
-    }
-
-    private fun updateCurrentPlaySourceNameToDataStore(sourceName: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            musicDataStore.setCurrentPlaySourceName(sourceName)
-        }
     }
 
     private fun togglePlayPause() {
@@ -202,26 +189,35 @@ class MusicService : Service() {
     private fun nextTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size
-        updateCurrentSongIdToDataStore()
         prepareAndStart()
-        MusicStateHolder.updateNextPreviousMusic(
-            playlist[currentTrackIndex].songId,
-            playlist[currentTrackIndex].singer,
-            playlist[currentTrackIndex].songName,
-            playlist[currentTrackIndex].duration
+        val song = playlist[currentTrackIndex]
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(
+            state.copy(
+                songId = song.songId,
+                singer = song.singer,
+                songName = song.songName,
+                duration = song.duration,
+                coverArtUri = song.coverArtUri,
+                isPlaying = true
+            )
         )
     }
 
     private fun previousTrack() {
         if (playlist.isEmpty()) return
         currentTrackIndex = if (currentTrackIndex - 1 < 0) playlist.size - 1 else currentTrackIndex - 1
-        updateCurrentSongIdToDataStore()
         prepareAndStart()
-        MusicStateHolder.updateNextPreviousMusic(
-            playlist[currentTrackIndex].songId,
-            playlist[currentTrackIndex].singer,
-            playlist[currentTrackIndex].songName,
-            playlist[currentTrackIndex].duration
+        val song = playlist[currentTrackIndex]
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(
+            state.copy(
+                songId = song.songId,
+                singer = song.singer,
+                songName = song.songName,
+                duration = song.duration,
+                coverArtUri = song.coverArtUri
+            )
         )
     }
 
@@ -254,6 +250,12 @@ class MusicService : Service() {
             "${currentSong.songName} - ${currentSong.singer}"
         }
 
+        val coverArt = if (currentSong?.coverArtUri == null) {
+            drawableResToBitmap(this, R.drawable.img_song_default)
+        } else {
+            loadBitmapFromUri(application, currentSong.coverArtUri)
+        }
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(contentTitle)
             .setContentText(contentText)
@@ -271,6 +273,7 @@ class MusicService : Service() {
                 MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
             )
+            .setLargeIcon(coverArt)
             .setOnlyAlertOnce(true)
             .build()
     }
@@ -289,4 +292,29 @@ class MusicService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {
+        return try {
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            val bitmap = inputStream.use { stream ->
+                BitmapFactory.decodeStream(stream)
+            }
+            bitmap ?: drawableResToBitmap(context, R.drawable.img_song_default)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            drawableResToBitmap(context, R.drawable.img_song_default)
+        }
+    }
+
+    fun drawableResToBitmap(context: Context, drawableRes: Int): Bitmap {
+        val drawable = ContextCompat.getDrawable(context, drawableRes)!!
+        val bitmap = createBitmap(
+            drawable.intrinsicWidth.coerceAtLeast(1),
+            drawable.intrinsicHeight.coerceAtLeast(1)
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
 }

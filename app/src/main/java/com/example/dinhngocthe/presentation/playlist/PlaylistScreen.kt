@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.presentation.playlist
 
-import android.app.Application
+import android.content.Intent
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -14,16 +15,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinhngocthe.R
+import com.example.dinhngocthe.service.MusicService
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
 import org.koin.androidx.compose.koinViewModel
+import kotlin.jvm.java
 
 @Composable
 fun MyPlaylistScreen(
     innerPadding: PaddingValues,
     viewModel: PlaylistViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -41,6 +44,26 @@ fun MyPlaylistScreen(
     var isListLayout by remember { mutableStateOf(true) }
     var iconDisplayMode = if (isListLayout) R.drawable.ic_list_mode else R.drawable.ic_grid_mode
     var songMenuIndex by remember { mutableIntStateOf(-1) }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when(event) {
+                is PlaylistEvent.PlayMusic -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_START
+                        putExtra("SONG_ID", event.currentSongId)
+                        putExtra("SOURCE_NAME", event.currentPlaySourceName)
+                        putExtra("SONG_IDS", event.songIds.toLongArray())
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(intent)
+                    } else {
+                        context.startService(intent)
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -86,6 +109,8 @@ fun MyPlaylistScreen(
                 isListLayout = isListLayout,
                 songs = transformSongWithPlaylistIdToSong(state.playlists[selectedPlaylistIndex].playlistId, state.songs),
                 songMenuIndex = songMenuIndex,
+                currentSongId = state.currentSongId,
+                currentPlaySourceName = state.currentPlaySourceName,
                 headerModifier = Modifier,
                 mainModifier = Modifier,
                 onChangeDisplayMode = { isListLayout = !isListLayout },
@@ -96,6 +121,15 @@ fun MyPlaylistScreen(
                         PlaylistIntent.DeleteSongFromPlaylist(
                             playlistId = state.playlists[selectedPlaylistIndex].playlistId,
                             songId = songId
+                        )
+                    )
+                },
+                onPlayMusic = { songId, currentPlaySourceName, songIds ->
+                    viewModel.processIntent(
+                        PlaylistIntent.PlayMusic(
+                            songId = songId,
+                            currentPlaySourceName = currentPlaySourceName,
+                            songIds = songIds
                         )
                     )
                 }

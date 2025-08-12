@@ -17,4 +17,5 @@ interface SongRepository {
         onFailure: (Throwable) -> Unit
     )
     suspend fun downloadAndSaveSongDtosToStorage(songDtos: List<SongDto>): List<Song>
+    suspend fun getSongsBySongId(songIds: List<Long>): List<Song>
 }

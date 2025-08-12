@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,9 +50,8 @@ fun MainLibrary(
     onInsertToPlaylist: (Long) -> Unit,
     reload: () -> Unit,
     viewOffline: () -> Unit,
-    onPlayMusic: (currentSongId: Long, currentPlaySourceName: String, songIds: List<Long>) -> Unit,
+    onPlayMusic: (song: Song, currentPlaySourceName: String) -> Unit,
 ) {
-    Log.d("MainLibrary", currentSongId.toString() + currentPlaySourceName)
     if (songSource == SongSource.LOCAL) { // Local mode
         val songId = if (currentPlaySourceName == "local") currentSongId else -1
         LazyColumn(
@@ -69,8 +69,7 @@ fun MainLibrary(
                     onPlayMusic = {
                         onPlayMusic(
                             it,
-                            "local",
-                            localSongs.map { it.songId }
+                            "local"
                         )
                     }
                 )
@@ -111,8 +110,7 @@ fun MainLibrary(
                             onPlayMusic = {
                                 onPlayMusic(
                                     it,
-                                    "remote",
-                                    remoteSongs.map { it.songId }
+                                    "remote"
                                 )
                             }
                         )
@@ -139,15 +137,15 @@ private fun SongItem(
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
     addToPlaylist: (Int) -> Unit,
-    onPlayMusic: (Long) -> Unit
+    onPlayMusic: (Song) -> Unit
 ) {
-    val color = if (currentSongId == song.songId) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+    val color = if (currentSongId == song.songId) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(color)
-            .clickable{ onPlayMusic(song.songId) }
+            .clickable{ onPlayMusic(song) }
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row {

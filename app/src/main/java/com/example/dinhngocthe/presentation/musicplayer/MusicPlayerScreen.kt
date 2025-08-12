@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.presentation.musicplayer
 
-import androidx.compose.foundation.Image
+import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,34 +9,23 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
+import com.example.dinhngocthe.service.MusicService
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -45,7 +35,47 @@ fun MusicPlayerScreen(
     onBack: () -> Unit,
     viewModel: MusicPlayerViewModel = koinViewModel()
 ) {
-    val state = viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        viewModel.processIntent(MusicPlayerIntent.LoadData)
+    }
+
+    val iconPlayPause = if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                MusicPlayerEvent.CloseMusic -> {
+                    onBack()
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_CLOSE
+                    }
+                    context.startService(intent)
+                }
+
+                MusicPlayerEvent.PlayPauseMusic -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_PLAY_PAUSE
+                    }
+                    context.startService(intent)
+                }
+
+                MusicPlayerEvent.NextMusic -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_NEXT
+                    }
+                    context.startService(intent)
+                }
+                MusicPlayerEvent.PreviousMusic -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_PREVIOUS
+                    }
+                    context.startService(intent)
+                }
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -58,10 +88,21 @@ fun MusicPlayerScreen(
         ) {
             HeaderMusicPlayer(
                 onBack = { onBack() },
-                onCloseMusic = {}
+                onCloseMusic = { viewModel.processIntent(MusicPlayerIntent.CloseMusic) }
             )
 
-            MainMusicPlayer()
+            MainMusicPlayer(
+                progress = state.progress,
+                duration = state.duration,
+                coverArtUri = state.coverArtUri,
+                songName = state.songName,
+                singer = state.singer,
+                iconPlayPause = iconPlayPause,
+                onPlayPause = { viewModel.processIntent(MusicPlayerIntent.PlayPauseMusic) },
+                onNextMusic = { viewModel.processIntent(MusicPlayerIntent.NextMusic) },
+                onPreviousMusic = { viewModel.processIntent(MusicPlayerIntent.PreviousMusic) }
+            )
+            Log.d("MusicPlayer", state.progress.toString())
         }
     }
 }
@@ -114,130 +155,4 @@ fun HeaderMusicPlayer(
     }
 
     Spacer(Modifier.size(20.dp))
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainMusicPlayer(
-    modifier: Modifier = Modifier
-) {
-    var progress by remember { mutableFloatStateOf(0f) }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 30.dp)
-    ) {
-        Image(
-            painter = painterResource(R.drawable.img_song_default),
-            contentDescription = "Cover art",
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp)),
-            contentScale = ContentScale.Crop,
-        )
-
-        Spacer(Modifier.size(20.dp))
-
-        Text(
-            text = "Nắng Có Mang Em Về",
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 20.sp
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = "Phankeoo",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-
-        Spacer(Modifier.size(20.dp))
-
-        Slider(
-            value = progress,
-            onValueChange = { progress = it }
-        )
-    }
-}
-
-//@Preview
-//@Composable
-//private fun PrevHeaderMusicPlayerScreen() {
-//    MusicPlayerScreen(
-//        innerPadding = PaddingValues(top = 10.dp),
-//        onBack = {}
-//    )
-//}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-private fun PrevMainMusicPlayerScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 30.dp)
-    ) {
-        Image(
-            painter = painterResource(R.drawable.img_song_default),
-            contentDescription = "Cover art",
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp)),
-            contentScale = ContentScale.Crop,
-        )
-
-        Spacer(Modifier.size(20.dp))
-
-        Text(
-            text = "Nắng Có Mang Em Về",
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = "Phankeoo",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-
-        Spacer(Modifier.size(20.dp))
-
-//        Slider(
-//            value = 0f,
-//            onValueChange = { },
-//            modifier = modifier.height(10.dp),
-//            colors = SliderDefaults.colors(
-//                thumbColor = MaterialTheme.colorScheme.primary,
-//                activeTrackColor = MaterialTheme.colorScheme.primary,
-//                inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-//            ),
-//            track = { sliderState ->
-//                SliderDefaults.Track(
-//                    sliderState = sliderState,
-//                    modifier = Modifier
-//                        .height(8.dp)
-//                        .clip(RoundedCornerShape(5))
-//                )
-//            },
-//            thumb = {
-//                Box(
-//                    modifier = Modifier
-//                        .size(11.dp)
-//                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
-//                )
-//            }
-//        )
-    }
 }

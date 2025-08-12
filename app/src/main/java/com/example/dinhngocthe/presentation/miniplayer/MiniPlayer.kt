@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -124,7 +123,7 @@ fun MiniPlayer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = formatDuration(state.duration),
+                        text = formatDuration((state.duration * state.progress).toLong()),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 14.sp
                         ),
@@ -158,33 +157,3 @@ fun MiniPlayer(
         }
     }
 }
-
-//@Preview
-//@Composable
-//private fun MiniPlayerPrevLight() {
-//    AppTheme(false) {
-//        MiniPlayer(
-//            modifier = Modifier,
-//            progress = 0.5f,
-//            songName = "Chẳng phải phép màu hi hi hi hẹ hẹ hẹ ẹ ẹ ẹ",
-//            duration = 240_000L,
-//            onPlayPause = {},
-//            onClose = {}
-//        )
-//    }
-//}
-//
-//@Preview
-//@Composable
-//private fun MiniPlayerPrevDark() {
-//    AppTheme(true) {
-//        MiniPlayer(
-//            modifier = Modifier,
-//            progress = 0.5f,
-//            songName = "Chẳng phải phép màu hi hi hi hẹ hẹ hẹ ẹ ẹ ẹ",
-//            duration = 240_000L,
-//            onPlayPause = {},
-//            onClose = {}
-//        )
-//    }
-//}

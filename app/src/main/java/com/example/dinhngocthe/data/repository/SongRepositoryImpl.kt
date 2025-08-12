@@ -28,6 +28,10 @@ class SongRepositoryImpl(
         return downloadSongDataSource.downloadAndSaveSongDtosToStorage(context, songDtos)
     }
 
+    override suspend fun getSongsBySongId(songIds: List<Long>): List<Song> {
+        return songDao.getSongsBySongId(songIds)
+    }
+
     override suspend fun loadLocalSongsFromDevice(): List<Song>? {
         return deviceSongDataSource.loadAllSongsFromDevice(context)
     }

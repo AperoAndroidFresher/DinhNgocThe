@@ -1,5 +1,7 @@
 package com.example.dinhngocthe.presentation.playlist
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -47,13 +51,17 @@ fun SongLayout(
     isListLayout: Boolean,
     songs: List<Song>,
     songMenuIndex: Int,
+    currentSongId: Long,
+    currentPlaySourceName: String,
     headerModifier: Modifier = Modifier,
     mainModifier: Modifier = Modifier,
     onChangeDisplayMode: () -> Unit,
     onChangeSelectedPlaylistIndex: (Int) -> Unit,
     onChangeSongMenuIndex: (Int) -> Unit,
-    onDeleteSongFromPlaylist: (Long) -> Unit
+    onDeleteSongFromPlaylist: (Long) -> Unit,
+    onPlayMusic: (songId: Long, currentPlaySourceName: String, songIds: List<Long>) -> Unit
 ) {
+    val songId = if (currentPlaySourceName == playlistName) currentSongId else -1
     HeaderListSongs(
         playlistName = playlistName,
         iconDisplayMode = iconDisplayMode,
@@ -66,16 +74,33 @@ fun SongLayout(
         ListSongs(
             songs = songs,
             songMenuIndex = songMenuIndex,
+            currentSongId = songId,
             modifier = mainModifier,
             onChangeSongMenuIndex = { onChangeSongMenuIndex(it) },
-            onDeleteSongFromPlaylist = { onDeleteSongFromPlaylist(it) }
+            onDeleteSongFromPlaylist = { onDeleteSongFromPlaylist(it) },
+            onPlayMusic = {
+                onPlayMusic(
+                    it,
+                    playlistName,
+                    songs.map { it.songId }
+                )
+            }
         )
     } else {
         GridSongs(
             songs = songs,
             songMenuIndex = songMenuIndex,
+            currentSongId = songId,
+            modifier = mainModifier,
             onChangeSongMenuIndex = { onChangeSongMenuIndex(it) },
-            onDeleteSongFromPlaylist = { onDeleteSongFromPlaylist(it) }
+            onDeleteSongFromPlaylist = { onDeleteSongFromPlaylist(it) },
+            onPlayMusic = {
+                onPlayMusic(
+                    it,
+                    playlistName,
+                    songs.map { it.songId }
+                )
+            }
         )
     }
 }
@@ -149,17 +174,25 @@ fun HeaderListSongs(
 fun ListSongs(
     songs: List<Song>,
     songMenuIndex: Int,
+    currentSongId: Long,
     modifier: Modifier = Modifier,
     onChangeSongMenuIndex: (Int) -> Unit,
-    onDeleteSongFromPlaylist: (Long) -> Unit
+    onDeleteSongFromPlaylist: (Long) -> Unit,
+    onPlayMusic: (Long) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = modifier.fillMaxWidth()
     ) {
         items(songs.size) { index ->
-            Box(modifier = Modifier.fillMaxWidth()) {
+            val backgroundColor = if (songs[index].songId == currentSongId) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onPlayMusic(songs[index].songId) }
+                    .background(backgroundColor)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+            ) {
                 Row {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
@@ -234,22 +267,28 @@ fun ListSongs(
 fun GridSongs(
     songs: List<Song>,
     songMenuIndex: Int,
+    currentSongId: Long,
     modifier: Modifier = Modifier,
     onChangeSongMenuIndex: (Int) -> Unit,
-    onDeleteSongFromPlaylist: (Long) -> Unit
+    onDeleteSongFromPlaylist: (Long) -> Unit,
+    onPlayMusic: (Long) -> Unit
 ) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     LazyVerticalGrid(
-        columns = GridCells.Fixed((screenWidth.value / 200.dp.value).toInt()),
+        columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         items(songs.size) { index ->
+            val backgroundColor = if (songs[index].songId == currentSongId) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .width(200.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onPlayMusic(songs[index].songId) }
+                    .background(backgroundColor)
+                    .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(modifier = Modifier.padding(horizontal = 30.dp)) {
+                Box() {
                     AsyncImage(
                         model = ImageRequest.Builder(context = LocalContext.current)
                             .data(songs[index].coverArtUri)
@@ -259,6 +298,7 @@ fun GridSongs(
                         modifier = Modifier
                             .clip(RoundedCornerShape(7.dp))
                             .size(150.dp),
+                        contentScale = ContentScale.Crop,
                         error = painterResource(R.drawable.img_song_default)
                     )
                     Button(

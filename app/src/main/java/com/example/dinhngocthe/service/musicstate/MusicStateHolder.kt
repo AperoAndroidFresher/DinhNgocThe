@@ -17,19 +17,6 @@ object MusicStateHolder {
         _state.update { it.copy(isPlaying = isPlaying) }
     }
 
-    fun updateNextPreviousMusic(songId: Long, singer: String, songName: String, duration: Long) {
-        _state.update {
-            it.copy(
-                songId = songId,
-                singer = singer,
-                songName = songName,
-                duration = duration,
-                isPlaying = true,
-                progress = 0f
-            )
-        }
-    }
-
     fun closePlayMusic() {
         _state.value = MusicState()
     }
