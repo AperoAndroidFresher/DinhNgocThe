@@ -25,7 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
 import com.example.dinhngocthe.service.MusicService
 import org.koin.androidx.compose.koinViewModel
 
@@ -83,6 +83,43 @@ fun MusicPlayerScreen(
                     }
                     context.startService(intent)
                 }
+
+                is MusicPlayerEvent.UpdateProgress -> {
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.updateProgress(event.progress)
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_SEEK_TO
+                            putExtra("PROGRESS", event.progress)
+                        }
+                        context.startService(intent)
+                    }
+                }
+
+                MusicPlayerEvent.StopUpdateProgress -> {
+                    if (MusicPlayerLibrary.isActive()) {
+                        MusicPlayerLibrary.stopUpdateProgress()
+                    } else {
+                        val intent = Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_STOP_UPDATE_PROGRESS
+                        }
+                        context.startService(intent)
+                    }
+                }
+
+                MusicPlayerEvent.Shuffle -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_SHUFFLE
+                    }
+                    context.startService(intent)
+                }
+
+                MusicPlayerEvent.Repeat -> {
+                    val intent = Intent(context, MusicService::class.java).apply {
+                        action = MusicService.ACTION_REPEAT
+                    }
+                    context.startService(intent)
+                }
             }
         }
     }
@@ -112,11 +149,17 @@ fun MusicPlayerScreen(
                 enablePrevious = state.enablePrevious,
                 enableNext = state.enableNext,
                 enableRepeat = state.enableRepeat,
+                isShuffle = state.isShuffle,
+                isRepeat = state.isRepeat,
                 onPlayPause = { viewModel.processIntent(MusicPlayerIntent.PlayPauseMusic) },
                 onNextMusic = { viewModel.processIntent(MusicPlayerIntent.NextMusic) },
-                onPreviousMusic = { viewModel.processIntent(MusicPlayerIntent.PreviousMusic) }
+                onPreviousMusic = { viewModel.processIntent(MusicPlayerIntent.PreviousMusic) },
+                onSeekTo = { viewModel.processIntent(MusicPlayerIntent.UpdateProgress(it)) },
+                onChangeProgress = { viewModel.processIntent(MusicPlayerIntent.OnChangeProgress(it)) },
+                onShuffle = { viewModel.processIntent(MusicPlayerIntent.Shuffle) },
+                onRepeat = { viewModel.processIntent(MusicPlayerIntent.Repeat) }
             )
-            Log.d("MusicPlayer", state.progress.toString())
+            //Log.d("MusicPlayer", state.progress.toString())
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.example.dinhngocthe.presentation.musicplayer
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
 import com.example.dinhngocthe.service.musicstate.MusicState
 import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,6 +42,48 @@ class MusicPlayerViewModel : ViewModel() {
             MusicPlayerIntent.PreviousMusic -> {
                 handlePreviousMusic()
             }
+
+            is MusicPlayerIntent.UpdateProgress -> {
+                handleUpdateProgress(intent)
+            }
+
+            is MusicPlayerIntent.OnChangeProgress -> {
+                handleOnChangeProgress(intent)
+            }
+
+            MusicPlayerIntent.Shuffle -> {
+                handleShuffle()
+            }
+
+            MusicPlayerIntent.Repeat -> {
+                handleRepeat()
+            }
+        }
+    }
+
+    private fun handleRepeat() {
+        viewModelScope.launch {
+            _event.emit(MusicPlayerEvent.Repeat)
+        }
+    }
+
+    private fun handleShuffle() {
+        viewModelScope.launch {
+            _event.emit(MusicPlayerEvent.Shuffle)
+        }
+    }
+
+    private fun handleOnChangeProgress(intent: MusicPlayerIntent.OnChangeProgress) {
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(state.copy(progress = intent.progress))
+        viewModelScope.launch {
+            _event.emit(MusicPlayerEvent.StopUpdateProgress)
+        }
+    }
+
+    private fun handleUpdateProgress(intent: MusicPlayerIntent.UpdateProgress) {
+        viewModelScope.launch {
+            _event.emit(MusicPlayerEvent.UpdateProgress(intent.progress))
         }
     }
 

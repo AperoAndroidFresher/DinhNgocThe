@@ -6,12 +6,15 @@ import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datastore.UserDataStore
+import com.example.dinhngocthe.data.repository.HomeRepositoryImpl
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
 import com.example.dinhngocthe.data.repository.SongRepositoryImpl
 import com.example.dinhngocthe.data.repository.UserRepositoryImpl
+import com.example.dinhngocthe.domain.repository.HomeRepository
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
 import com.example.dinhngocthe.domain.repository.UserRepository
+import com.example.dinhngocthe.presentation.home.HomeViewModel
 import com.example.dinhngocthe.presentation.library.LibraryViewModel
 import com.example.dinhngocthe.presentation.login.LoginViewModel
 import com.example.dinhngocthe.presentation.miniplayer.MiniPlayerViewModel
@@ -42,6 +45,7 @@ val appModule = module {
         )
     }
     single<PlaylistRepository> { PlaylistRepositoryImpl(get<Application>()) }
+    single<HomeRepository> { HomeRepositoryImpl() }
 
     // ViewModels
     viewModel { LoginViewModel(get(), get()) }
@@ -52,5 +56,6 @@ val appModule = module {
     viewModel { MiniPlayerViewModel() }
     viewModel { MusicPlayerViewModel() }
     viewModel { SplashViewModel(get()) }
+    viewModel { HomeViewModel(get(), get(), get()) }
 }
 

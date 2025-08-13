@@ -19,7 +19,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
             var isSplash by remember { mutableStateOf(true) }
@@ -40,7 +39,8 @@ class MainActivity : ComponentActivity() {
                     NavRoutes(
                         onChangeMode = { isDarkTheme = !isDarkTheme },
                         isDarkTheme = isDarkTheme,
-                        isLogged = isLogged
+                        isLogged = isLogged,
+                        startDestinationAfterHome = destination
                     )
                 }
             }

@@ -46,8 +46,11 @@ class MusicService : Service() {
 
     private lateinit var songDao: SongDao
     private var playlist: List<Song> = emptyList()
+    private var playlistBackUp: List<Song> = emptyList()
     private var currentTrackIndex = 0
     private var updateProgressJob: Job? = null
+    private var isShuffle: Boolean = false
+    private var isRepeat: Boolean = false
 
     companion object {
         const val CHANNEL_ID = "music_channel"
@@ -58,6 +61,10 @@ class MusicService : Service() {
         const val ACTION_PREVIOUS = "ACTION_PREVIOUS"
         const val ACTION_CLOSE = "ACTION_CLOSE"
         const val ACTION_START = "ACTION_START"
+        const val ACTION_SEEK_TO = "ACTION_SEEK_TO"
+        const val ACTION_STOP_UPDATE_PROGRESS = "ACTION_STOP_UPDATE_PROGRESS"
+        const val ACTION_SHUFFLE = "ACTION_SHUFFLE"
+        const val ACTION_REPEAT = "ACTION_REPEAT"
     }
 
     override fun onCreate() {
@@ -99,8 +106,88 @@ class MusicService : Service() {
             ACTION_START -> {
                 start(intent)
             }
+            ACTION_SEEK_TO -> {
+                seekTo(intent)
+            }
+            ACTION_STOP_UPDATE_PROGRESS -> {
+                Log.e("MusicService", "Stop update progress")
+                updateProgressJob?.cancel()
+            }
+            ACTION_SHUFFLE -> {
+                handleShuffle()
+            }
+            ACTION_REPEAT -> {
+                handleRepeat()
+            }
         }
         return START_STICKY
+    }
+
+    private fun handleRepeat() {
+        isRepeat = !isRepeat
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(
+            state.copy(
+                isRepeat = isRepeat
+            )
+        )
+    }
+
+    private fun handleShuffle() {
+        if (!isShuffle) {
+            shuffle()
+        } else {
+            unShuffle()
+        }
+    }
+
+    private fun shuffle() {
+        val currentSong = playlist[currentTrackIndex]
+        val shuffleList = playlist.toMutableList()
+        shuffleList.remove(currentSong)
+        shuffleList.shuffle()
+        shuffleList.add(0, currentSong)
+        playlist = shuffleList
+        currentTrackIndex = 0
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(
+            state.copy(
+                isShuffle = true
+            )
+        )
+        isShuffle = true
+        updateNotification()
+    }
+
+    private fun unShuffle() {
+        val currentSong = playlist[currentTrackIndex]
+        playlist = playlistBackUp.toList()
+        currentTrackIndex = playlist.indexOf(currentSong)
+        val state = MusicStateHolder.state.value
+        MusicStateHolder.updateState(
+            state.copy(
+                isShuffle = false
+            )
+        )
+        isShuffle = false
+        updateNotification()
+    }
+
+    private fun seekTo(intent: Intent) {
+        val newProgress = intent.getFloatExtra("PROGRESS", 0f)
+        mediaPlayer?.let { player ->
+            val duration = player.duration
+            val newPosition = (duration * newProgress).toInt()
+            player.seekTo(newPosition)
+            //val currentState = MusicStateHolder.state.value
+            //MusicStateHolder.updateState(currentState.copy(progress = progress))
+            if (!player.isPlaying) {
+                player.start()
+                MusicStateHolder.updateIsPlayingState(true)
+            }
+            startUpdatingProgress()
+            updateNotification()
+        }
     }
 
     private fun start(intent: Intent) {
@@ -110,6 +197,7 @@ class MusicService : Service() {
 
         CoroutineScope(Dispatchers.IO).launch {
             playlist = songDao.getSongsBySongId(songIds.toList())
+            playlistBackUp = playlist.toList()
             updateCurrentTrackIndex(songId)
             prepareAndStart()
             startForeground(NOTIFICATION_ID, buildNotification())
@@ -167,7 +255,18 @@ class MusicService : Service() {
                 startUpdatingProgress()
             }
             setOnCompletionListener {
-                nextTrack()
+                if (isRepeat == false && currentTrackIndex == playlist.size - 1) {
+                    val state = MusicStateHolder.state.value
+                    MusicStateHolder.updateState(
+                        state.copy(
+                            isPlaying = false
+                        )
+                    )
+                    updateNotification()
+                    return@setOnCompletionListener
+                } else {
+                    nextTrack()
+                }
             }
             prepareAsync()
         }
@@ -193,6 +292,9 @@ class MusicService : Service() {
     }
 
     private fun nextTrack() {
+        if (isRepeat == false && currentTrackIndex == playlist.size - 1) {
+            return
+        }
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size
         prepareAndStart()
         val song = playlist[currentTrackIndex]
@@ -210,6 +312,9 @@ class MusicService : Service() {
     }
 
     private fun previousTrack() {
+        if (isRepeat == false && currentTrackIndex == 0) {
+            return
+        }
         currentTrackIndex = if (currentTrackIndex - 1 < 0) playlist.size - 1 else currentTrackIndex - 1
         prepareAndStart()
         val song = playlist[currentTrackIndex]
@@ -259,7 +364,7 @@ class MusicService : Service() {
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("DESTINATION", "music_player")
+            putExtra("DESTINATION", "MUSIC_PLAYER")
         }
         val mainIntent = PendingIntent.getActivity(
             this, 4, intent,

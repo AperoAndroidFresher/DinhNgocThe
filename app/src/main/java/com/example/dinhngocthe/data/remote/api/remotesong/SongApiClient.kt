@@ -1,15 +1,15 @@
-package com.example.dinhngocthe.data.remote.api
+package com.example.dinhngocthe.data.remote.api.remotesong
 
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object ApiClient {
+object SongApiClient {
     private const val BASE_URL = "https://static.apero.vn"
     private val retrofit by lazy { buildRetrofit() }
     private var gsonConfig = GsonBuilder().create()
-    fun build(): ApiService {
-        return retrofit.create(ApiService::class.java)
+    fun build(): SongApiService {
+        return retrofit.create(SongApiService::class.java)
     }
 
     private fun buildRetrofit(): Retrofit {

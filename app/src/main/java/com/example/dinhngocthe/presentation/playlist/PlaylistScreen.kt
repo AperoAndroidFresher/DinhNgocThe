@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.R
-import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
 import com.example.dinhngocthe.service.MusicService
 import com.example.dinhngocthe.utils.transformSongWithPlaylistIdToSong
 import org.koin.androidx.compose.koinViewModel

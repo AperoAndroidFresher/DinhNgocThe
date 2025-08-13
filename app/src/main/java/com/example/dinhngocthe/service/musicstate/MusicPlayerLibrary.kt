@@ -1,13 +1,9 @@
-package com.example.dinhngocthe.presentation.library
+package com.example.dinhngocthe.service.musicstate
 
-import android.app.Application
 import android.content.Context
 import android.media.MediaPlayer
-import android.net.Uri
 import android.util.Log
 import com.example.dinhngocthe.data.local.entities.Song
-import com.example.dinhngocthe.service.musicstate.MusicState
-import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -98,5 +94,22 @@ object MusicPlayerLibrary {
 
     fun isActive(): Boolean {
         return mediaPlayer != null
+    }
+
+    fun updateProgress(progress: Float) {
+        mediaPlayer?.let { mediaPlayer ->
+            val duration = mediaPlayer.duration
+            val newPosition = (duration * progress).toInt()
+            mediaPlayer.seekTo(newPosition)
+            if (!mediaPlayer.isPlaying) {
+                mediaPlayer.start()
+                MusicStateHolder.updateIsPlayingState(true)
+            }
+            startUpdatingProgress()
+        }
+    }
+
+    fun stopUpdateProgress() {
+        updateProgressJob?.cancel()
     }
 }

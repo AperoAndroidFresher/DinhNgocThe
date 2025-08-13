@@ -3,6 +3,7 @@ package com.example.dinhngocthe.presentation.navigation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -22,10 +23,20 @@ fun NavRoutes(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
     isLogged: Boolean,
+    startDestinationAfterHome: String
 ) {
     val firstRoute = if (isLogged) Destination.HomeRoute else Destination.LoginRoute
     var backStack = rememberNavBackStack(firstRoute)
     val currentRoute = backStack.lastOrNull() as Destination
+
+    LaunchedEffect(Unit) {
+        if (currentRoute == Destination.HomeRoute && startDestinationAfterHome.isNotBlank()) {
+            when (startDestinationAfterHome) {
+                "MUSIC_PLAYER" -> backStack.add(Destination.MusicPlayerRoute)
+            }
+        }
+    }
+
     val items = listOf<BottomNavBarItem>(
         BottomNavBarItem(0, "Home", R.drawable.ic_home, Destination.HomeRoute),
         BottomNavBarItem(1, "Library", R.drawable.ic_library, Destination.LibraryRoute),

@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.presentation.musicplayer
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -51,11 +52,20 @@ fun MainMusicPlayer(
     enablePrevious: Boolean,
     enableNext: Boolean,
     enableRepeat: Boolean,
+    isShuffle: Boolean,
+    isRepeat: Boolean,
     modifier: Modifier = Modifier,
     onPlayPause: () -> Unit,
     onNextMusic: () -> Unit,
-    onPreviousMusic: () -> Unit
+    onPreviousMusic: () -> Unit,
+    onSeekTo: (Float) -> Unit,
+    onChangeProgress: (Float) -> Unit,
+    onShuffle: () -> Unit,
+    onRepeat: () -> Unit
 ) {
+    var init = 0
+    val shuffleColor = if (isShuffle) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+    val repeatColor = if (isRepeat) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -104,7 +114,16 @@ fun MainMusicPlayer(
             ColorfulSlider(
                 value = progress,
                 valueRange = 0f..1f,
-                onValueChange = {                       },
+                onValueChange = {
+                    ++init
+                    if (init > 1) {
+                        onChangeProgress(it)
+                        Log.e("MainMusicPlayer", "OnchangeProgress")
+                    }
+                },
+                onValueChangeFinished = {
+                    onSeekTo(progress)
+                },
                 thumbRadius = 7.dp,
                 trackHeight = 5.dp,
                 colors = MaterialSliderDefaults.customColors(
@@ -141,13 +160,14 @@ fun MainMusicPlayer(
             modifier = Modifier.fillMaxWidth()
         ) {
             IconButton(
-                onClick = { },
+                onClick = { onShuffle() },
                 modifier = Modifier.weight(1f),
                 enabled = enableShuffle
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_shuffle),
-                    contentDescription = "Press to shuffle"
+                    contentDescription = "Press to shuffle",
+                    tint = shuffleColor
                 )
             }
 
@@ -191,13 +211,14 @@ fun MainMusicPlayer(
             }
 
             IconButton(
-                onClick = { },
+                onClick = { onRepeat() },
                 modifier = Modifier.weight(1f),
                 enabled = enableRepeat
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_repeat),
-                    contentDescription = "Press to repeat"
+                    contentDescription = "Press to repeat",
+                    tint = repeatColor
                 )
             }
         }

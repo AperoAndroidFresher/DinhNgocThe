@@ -6,7 +6,7 @@ import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
-import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
 import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

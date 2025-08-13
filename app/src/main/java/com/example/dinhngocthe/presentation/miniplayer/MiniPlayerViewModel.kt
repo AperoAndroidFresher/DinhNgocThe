@@ -2,7 +2,7 @@ package com.example.dinhngocthe.presentation.miniplayer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.presentation.library.MusicPlayerLibrary
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
 import com.example.dinhngocthe.service.musicstate.MusicState
 import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.flow.MutableSharedFlow
