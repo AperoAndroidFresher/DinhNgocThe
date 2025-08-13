@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,7 +43,8 @@ fun HomeScreen(
 
         MainHome(
             modifier = Modifier,
-            topAlbums = state.topAlbums
+            topAlbums = state.topAlbums,
+            topTracks = state.topTracks?.topTracks
         )
     }
 }

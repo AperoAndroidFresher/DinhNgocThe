@@ -24,13 +24,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.remote.model.TopAlbumsResponse
+import com.example.dinhngocthe.data.remote.model.TopTracksDto
 
 @Composable
 fun MainHome(
     modifier: Modifier = Modifier,
-    topAlbums: TopAlbumsResponse?
+    topAlbums: TopAlbumsResponse?,
+    topTracks: TopTracksDto?
 ) {
     LazyColumn(
         modifier = modifier
@@ -39,15 +42,14 @@ fun MainHome(
     ) {
         item {
             Row(
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = 15.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_ranking),
                     contentDescription = "Ranking",
                     modifier = Modifier
-                        .size(32.dp)
-                        .padding(bottom = 5.dp)
-                        .align(Alignment.Bottom),
+                        .size(24.dp)
+                        .align(Alignment.Top),
                     tint = colorResource(R.color.gold)
                 )
 
@@ -68,12 +70,13 @@ fun MainHome(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 15.dp)
             ) {
                 Text(
                     text = "Top Albums",
                     style = MaterialTheme.typography.titleLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 18.sp
                     ),
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
@@ -89,11 +92,51 @@ fun MainHome(
                         .clickable{  }
                 )
             }
+
+            Spacer(Modifier.size(15.dp))
         }
 
         item {
             TopAlbums(
                 topAlbums = topAlbums
+            )
+
+            Spacer(Modifier.size(35.dp))
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp)
+            ) {
+                Text(
+                    text = "Top Tracks",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
+                Text(
+                    text = "See all",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable{  }
+                )
+            }
+
+            Spacer(Modifier.size(15.dp))
+        }
+
+        item {
+            TopTracks(
+                topTracks = topTracks
             )
         }
     }
