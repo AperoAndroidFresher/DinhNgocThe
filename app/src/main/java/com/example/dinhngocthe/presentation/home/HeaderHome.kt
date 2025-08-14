@@ -1,7 +1,5 @@
 package com.example.dinhngocthe.presentation.home
 
-import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,7 +34,8 @@ import com.example.dinhngocthe.data.local.entities.User
 fun HeaderHome(
     user: User,
     modifier: Modifier = Modifier,
-    navigateToProfile: () -> Unit
+    navigateToProfileScreen: () -> Unit,
+    navigateToSettingScreen: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -61,7 +60,7 @@ fun HeaderHome(
                     .size(50.dp)
                     .border(1.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
                     .clip(CircleShape)
-                    .clickable { navigateToProfile() },
+                    .clickable { navigateToProfileScreen() },
                 error = painterResource(R.drawable.img_avatar)
             )
             Column(
@@ -88,7 +87,7 @@ fun HeaderHome(
         }
 
         IconButton(
-            onClick = { },
+            onClick = { navigateToSettingScreen() },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .size(50.dp)
@@ -110,68 +109,5 @@ fun HeaderHome(
 @Preview(showBackground = true)
 @Composable
 private fun PrevHeaderHome() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 10.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(context = LocalContext.current)
-                    .data("Uri".toUri())
-                    .size(150)
-                    .crossfade(true)
-                    .allowHardware(false)
-                    .build(),
-                contentDescription = "Avatar",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(50.dp)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, shape = CircleShape)
-                    .clip(CircleShape),
-                error = painterResource(R.drawable.img_avatar)
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(start = 10.dp)
-            ) {
-                Text(
-                    text = "Welcome back!",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 18.sp
-                    )
-                )
-                Text(
-                    text = "Dinh Ngoc The",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.7f
-                        )
-                    )
-                )
-            }
-        }
 
-        IconButton(
-            onClick = { },
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .size(50.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_setting),
-                contentDescription = "Go Profile",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(12.dp)
-            )
-        }
-    }
 }

@@ -10,4 +10,5 @@ sealed interface ProfileIntent {
     data class AvatarUriChanged(val avatarUri: Uri?) : ProfileIntent
     data object SubmitChange : ProfileIntent
     data object LoadData : ProfileIntent
+    data object LogOut : ProfileIntent
 }

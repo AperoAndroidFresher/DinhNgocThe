@@ -29,6 +29,7 @@ fun ProfileScreen(
     onChangeMode: () -> Unit,
     isDarkTheme: Boolean,
     innerPadding: PaddingValues,
+    onLogOut: () -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val tag = "ProfileScreen"
@@ -49,6 +50,10 @@ fun ProfileScreen(
                 ProfileEvent.ShowSuccessDialog ->  {
                     isSuccessDialogVisible = true
                     isEditingMode = false
+                }
+
+                ProfileEvent.LogOut -> {
+                    onLogOut()
                 }
             }
         }
@@ -104,7 +109,8 @@ fun ProfileScreen(
             onUniversityNameChange = { viewModel.processIntent(ProfileIntent.UniversityNameChanged(it)) },
             onDescriptionChange = { viewModel.processIntent(ProfileIntent.DescriptionChanged(it)) },
             onChangeSuccessDialogState = { isSuccessDialogVisible = it },
-            onSubmitChange = { viewModel.processIntent(ProfileIntent.SubmitChange) }
+            onSubmitChange = { viewModel.processIntent(ProfileIntent.SubmitChange) },
+            onLogOut = { viewModel.processIntent(ProfileIntent.LogOut) }
         )
     }
 }

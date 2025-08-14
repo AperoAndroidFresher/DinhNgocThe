@@ -5,6 +5,7 @@ import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSourceImpl
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSourceImpl
+import com.example.dinhngocthe.data.local.datastore.LanguageDataStore
 import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.data.repository.HomeRepositoryImpl
 import com.example.dinhngocthe.data.repository.PlaylistRepositoryImpl
@@ -21,6 +22,7 @@ import com.example.dinhngocthe.presentation.miniplayer.MiniPlayerViewModel
 import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerViewModel
 import com.example.dinhngocthe.presentation.playlist.PlaylistViewModel
 import com.example.dinhngocthe.presentation.profile.ProfileViewModel
+import com.example.dinhngocthe.presentation.setting.SettingViewModel
 import com.example.dinhngocthe.presentation.signup.SignUpViewModel
 import com.example.dinhngocthe.presentation.splash.SplashViewModel
 import org.koin.android.ext.koin.androidContext
@@ -30,6 +32,7 @@ import org.koin.dsl.module
 val appModule = module {
     // Data Store
     single<UserDataStore> { UserDataStore(get()) }
+    single<LanguageDataStore> { LanguageDataStore(get()) }
 
     // DataSources
     single<DeviceSongDataSource> { DeviceSongDataSourceImpl() }
@@ -57,5 +60,6 @@ val appModule = module {
     viewModel { MusicPlayerViewModel() }
     viewModel { SplashViewModel(get()) }
     viewModel { HomeViewModel(get(), get(), get()) }
+    viewModel { SettingViewModel(get(), get()) }
 }
 

@@ -46,6 +46,17 @@ class ProfileViewModel(
             is ProfileIntent.DescriptionChanged -> _state.update { it.copy(description = intent.description) }
 
             is ProfileIntent.AvatarUriChanged -> _state.update { it.copy(avatarUri = intent.avatarUri) }
+
+            ProfileIntent.LogOut -> {
+                handleLogOut()
+            }
+        }
+    }
+
+    private fun handleLogOut() {
+        viewModelScope.launch {
+            userPrefs.removeUserId()
+            _event.emit(ProfileEvent.LogOut)
         }
     }
 

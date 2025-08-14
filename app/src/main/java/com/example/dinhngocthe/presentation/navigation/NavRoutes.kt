@@ -16,6 +16,7 @@ import com.example.dinhngocthe.presentation.miniplayer.MiniPlayer
 import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
 import com.example.dinhngocthe.presentation.profile.ProfileScreen
+import com.example.dinhngocthe.presentation.setting.SettingScreen
 import com.example.dinhngocthe.presentation.signup.SignUpScreen
 
 @Composable
@@ -92,6 +93,9 @@ fun NavRoutes(
                         innerPadding = innerPadding,
                         navigateToProfileScreen = {
                             backStack.add(Destination.ProfileRoute)
+                        },
+                        navigateToSettingScreen = {
+                            backStack.add(Destination.SettingRoute)
                         }
                     )
                 }
@@ -100,6 +104,10 @@ fun NavRoutes(
                     ProfileScreen(
                         onChangeMode = onChangeMode,
                         isDarkTheme,
+                        onLogOut = {
+                            backStack.clear()
+                            backStack.add(Destination.LoginRoute)
+                        },
                         innerPadding = innerPadding
                     )
                 }
@@ -120,6 +128,13 @@ fun NavRoutes(
 
                 entry<Destination.MusicPlayerRoute> {
                     MusicPlayerScreen(
+                        innerPadding = innerPadding,
+                        onBack = { backStack.removeLastOrNull() }
+                    )
+                }
+
+                entry<Destination.SettingRoute> {
+                    SettingScreen(
                         innerPadding = innerPadding,
                         onBack = { backStack.removeLastOrNull() }
                     )

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apero Music</string>
+    <string name="settings">Cài đặt</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="vi">Tiếng Việt</string>
+    <string name="en">Tiếng Anh</string>
+    <string name="ko">Hàn Quốc</string>
+    <string name="fr">Tiếng Pháp</string>
+</resources>

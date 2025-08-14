@@ -25,4 +25,7 @@ sealed interface Destination : NavKey {
 
     @Serializable
     data object MusicPlayerRoute: Destination
+
+    @Serializable
+    data object SettingRoute: Destination
 }

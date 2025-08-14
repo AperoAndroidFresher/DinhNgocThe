@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apero Music</string>
+    <string name="settings">Paramètre</string>
+    <string name="language">Langue</string>
+    <string name="vi">Vietnamien</string>
+    <string name="en">Anglais</string>
+    <string name="ko">Coréen</string>
+    <string name="fr">Français</string>
+</resources>
