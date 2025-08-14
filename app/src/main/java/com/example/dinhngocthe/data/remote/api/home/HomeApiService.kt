@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.data.remote.api.home
 
 import com.example.dinhngocthe.data.remote.model.TopAlbumsResponse
+import com.example.dinhngocthe.data.remote.model.TopArtistResponse
 import com.example.dinhngocthe.data.remote.model.TopTracksDto
 import com.example.dinhngocthe.data.remote.model.TopTracksResponse
 import retrofit2.Call
@@ -23,4 +24,12 @@ interface HomeApiService {
         @Query("method") method: String = "artist.getTopTracks",
         @Query("mbid") mbid: String
     ): Call<TopTracksResponse>
+
+    @GET(".")
+    fun getTopArtists(
+        @Query("api_key") apiKey: String,
+        @Query("format") format: String = "json",
+        @Query("method") method: String = "chart.gettopartists",
+        @Query("mbid") mbid: String
+    ): Call<TopArtistResponse>
 }

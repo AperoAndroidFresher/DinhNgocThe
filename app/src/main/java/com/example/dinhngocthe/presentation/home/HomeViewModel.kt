@@ -30,10 +30,11 @@ class HomeViewModel(
         }
     }
 
-    private fun handleLoadData() {
+    fun handleLoadData() {
         loadUser()
         loadTopAlbums()
         loadTopTracks()
+        loadTopArtists()
     }
 
     private fun setLoading(isLoading: Boolean) {
@@ -49,8 +50,8 @@ class HomeViewModel(
         viewModelScope.launch {
             setLoading(true)
             val userId = userDataStore.getUserId()
-            userRepository.getUserByUserId(userId!!).collectLatest {
-                _state.update { it.copy(user = it.user) }
+            userRepository.getUserByUserId(userId!!).collectLatest { user ->
+                _state.update { it.copy(user = user) }
                 setLoading(false)
             }
         }
@@ -60,29 +61,41 @@ class HomeViewModel(
         setLoading(true)
         homeRepository.getTopAlbums(
             onSuccess = { topAlbumResponse ->
-                _state.update { it.copy(topAlbums = topAlbumResponse) }
+                _state.update { it.copy(topAlbums = topAlbumResponse, error = "") }
                 setLoading(false)
             },
-            onFailure = {
-                _state.update { it.copy(error = it.error) }
+            onFailure = { error ->
+                _state.update { it.copy(error = error.message.toString()) }
                 setLoading(false)
             }
         )
     }
 
     private fun loadTopTracks() {
-        Log.d("HomeViewModel", "Load top tracks")
         setLoading(true)
         homeRepository.getTopTracks(
             onSuccess = { topTracks ->
-                _state.update { it.copy(topTracks = topTracks) }
+                _state.update { it.copy(topTracks = topTracks, error = "") }
                 setLoading(false)
-                Log.d("HomeViewModel Success", topTracks.topTracks.track.size.toString())
             },
-            onFailure = {
-                _state.update { it.copy(error = it.error) }
+            onFailure = { error ->
+                _state.update { it.copy(error = error.message.toString()) }
                 setLoading(false)
-                Log.d("HomeViewModel Failure", it.message.toString())
+            }
+        )
+    }
+
+    private fun loadTopArtists() {
+        setLoading(true)
+        homeRepository.getTopArtists(
+            onSuccess = { topArtists ->
+                _state.update { it.copy(topArtists = topArtists, error = "") }
+                setLoading(false)
+                Log.d("HomeViewModelTopArtists", topArtists.artists.artist.size.toString())
+            },
+            onFailure = { error ->
+                _state.update { it.copy(error = error.message.toString()) }
+                setLoading(false)
             }
         )
     }

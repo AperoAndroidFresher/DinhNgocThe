@@ -218,8 +218,9 @@ private fun SongItem(
 fun LoadMusicError(
     modifier: Modifier = Modifier,
     message: String,
-    reload: () -> Unit,
-    viewOffline: () -> Unit
+    enableButtonViewOffline: Boolean = true,
+    reload: () -> Unit = {},
+    viewOffline: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -261,22 +262,24 @@ fun LoadMusicError(
                 )
             }
 
-            Spacer(Modifier.size(20.dp))
+            if (enableButtonViewOffline) {
+                Spacer(Modifier.size(20.dp))
 
-            Button(
-                onClick = { viewOffline() },
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier
-                    .size(150.dp, 45.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            ) {
-                Text(
-                    text = "View offline",
-                    style = MaterialTheme.typography.labelSmall
-                )
+                Button(
+                    onClick = { viewOffline() },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .size(150.dp, 45.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
+                    Text(
+                        text = "View offline",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
 

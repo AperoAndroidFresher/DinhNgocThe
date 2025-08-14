@@ -1,6 +1,7 @@
 package com.example.dinhngocthe.presentation.home
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -79,7 +80,7 @@ fun HeaderHome(
                     text = user.fullName,
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.7f
+                            alpha = 0.5f
                         )
                     )
                 )

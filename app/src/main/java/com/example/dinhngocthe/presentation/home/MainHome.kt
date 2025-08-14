@@ -27,13 +27,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dinhngocthe.R
 import com.example.dinhngocthe.data.remote.model.TopAlbumsResponse
+import com.example.dinhngocthe.data.remote.model.TopArtistResponse
 import com.example.dinhngocthe.data.remote.model.TopTracksDto
 
 @Composable
 fun MainHome(
     modifier: Modifier = Modifier,
     topAlbums: TopAlbumsResponse?,
-    topTracks: TopTracksDto?
+    topTracks: TopTracksDto?,
+    topArtists: TopArtistResponse?
 ) {
     LazyColumn(
         modifier = modifier
@@ -137,6 +139,44 @@ fun MainHome(
         item {
             TopTracks(
                 topTracks = topTracks
+            )
+
+            Spacer(Modifier.size(35.dp))
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp)
+            ) {
+                Text(
+                    text = "Top Artist",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
+                Text(
+                    text = "See all",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable{  }
+                )
+            }
+
+            Spacer(Modifier.size(15.dp))
+        }
+
+        item {
+            TopArtist(
+                topArtist = topArtists
             )
         }
     }
