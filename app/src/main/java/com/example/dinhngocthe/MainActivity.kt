@@ -22,11 +22,6 @@ import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val languageCode = runBlocking {
-            LanguageDataStore(applicationContext).languageFlow.first()
-        }
-        updateLocale(applicationContext, languageCode)
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -59,13 +54,5 @@ class MainActivity : ComponentActivity() {
 
     private fun receiverIntent(): String {
         return intent.getStringExtra("DESTINATION") ?: ""
-    }
-
-    private fun updateLocale(context: Context, languageCode: String) {
-        val locale = Locale(languageCode)
-        Locale.setDefault(locale)
-        val config = context.resources.configuration
-        config.setLocale(locale)
-        context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 }

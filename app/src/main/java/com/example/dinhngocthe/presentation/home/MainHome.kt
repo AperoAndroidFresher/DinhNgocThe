@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun MainHome(
                 Spacer(modifier = Modifier.size(5.dp))
 
                 Text(
-                    text = "Ranking",
+                    text = stringResource(R.string.ranking),
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.primary
                     ),
@@ -75,7 +76,7 @@ fun MainHome(
                     .padding(horizontal = 15.dp)
             ) {
                 Text(
-                    text = "Top Albums",
+                    text = stringResource(R.string.top_albums),
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 18.sp
@@ -83,7 +84,7 @@ fun MainHome(
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
                 Text(
-                    text = "See all",
+                    text = stringResource(R.string.see_all),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = MaterialTheme.colorScheme.primary,
                         textDecoration = TextDecoration.Underline
@@ -113,7 +114,7 @@ fun MainHome(
                     .padding(horizontal = 15.dp)
             ) {
                 Text(
-                    text = "Top Tracks",
+                    text = stringResource(R.string.top_tracks),
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 18.sp
@@ -121,7 +122,7 @@ fun MainHome(
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
                 Text(
-                    text = "See all",
+                    text = stringResource(R.string.see_all),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = MaterialTheme.colorScheme.primary,
                         textDecoration = TextDecoration.Underline
@@ -151,7 +152,7 @@ fun MainHome(
                     .padding(horizontal = 15.dp)
             ) {
                 Text(
-                    text = "Top Artist",
+                    text = stringResource(R.string.top_artists),
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 18.sp
@@ -159,7 +160,7 @@ fun MainHome(
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
                 Text(
-                    text = "See all",
+                    text = stringResource(R.string.see_all),
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = MaterialTheme.colorScheme.primary,
                         textDecoration = TextDecoration.Underline

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apero Music</string>
+    <string name="settings">환경</string>
+    <string name="language">언어</string>
+    <string name="vi">베트남 사람</string>
+    <string name="en">영어</string>
+    <string name="ko">한국인</string>
+    <string name="fr">프랑스 국민</string>
+    <string name="welcome_back">환영합니다!</string>
+    <string name="ranking">순위</string>
+    <string name="top_albums">인기 앨범</string>
+    <string name="see_all">모두 보기</string>
+    <string name="top_tracks">인기 트랙</string>
+    <string name="top_artists">최고의 아티스트</string>
+</resources>

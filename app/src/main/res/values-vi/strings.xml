@@ -7,4 +7,10 @@
     <string name="en">Tiếng Anh</string>
     <string name="ko">Hàn Quốc</string>
     <string name="fr">Tiếng Pháp</string>
+    <string name="welcome_back">Chào mừng!</string>
+    <string name="ranking">Bảng xếp hạng</string>
+    <string name="top_albums">Album hàng đầu</string>
+    <string name="see_all">Xem thêm</string>
+    <string name="top_tracks">Bài hát hay nhất</string>
+    <string name="top_artists">Nghệ sĩ hàng đầu</string>
 </resources>

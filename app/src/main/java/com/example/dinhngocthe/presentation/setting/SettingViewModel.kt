@@ -2,9 +2,14 @@ package com.example.dinhngocthe.presentation.setting
 
 import android.app.Activity
 import android.app.Application
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.LocaleList
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.local.datastore.LanguageDataStore
@@ -42,24 +47,25 @@ class SettingViewModel(
     private fun handleChangeLanguage(languageCode: String) {
         viewModelScope.launch {
             languageDataStore.setLanguageCode(languageCode)
-            updateLocale(appContext, languageCode)
-            restartApp(appContext)
+            changeLanguage(context = appContext, languageCode = languageCode)
         }
     }
 
-    private fun updateLocale(context: Context, languageCode: String) {
-        val locale = Locale(languageCode)
-        Locale.setDefault(locale)
-        val config = context.resources.configuration
-        config.setLocale(locale)
-        context.resources.updateConfiguration(config, context.resources.displayMetrics)
-    }
-
-    private fun restartApp(context: Context) {
-        val pm = context.packageManager
-        val intent = pm.getLaunchIntentForPackage(context.packageName)?.apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    fun changeLanguage(context: Context, languageCode: String) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.getSystemService(LocaleManager::class.java).applicationLocales = LocaleList.forLanguageTags(languageCode)
+        } else {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageCode))
         }
+
+        val intent = context.packageManager
+            .getLaunchIntentForPackage(context.packageName)
+            ?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
         context.startActivity(intent)
+        if (context is Activity) {
+            context.finish()
+        }
     }
 }

@@ -21,6 +21,10 @@ class LanguageDataStore(private val context: Context) {
         }
     }
 
+    suspend fun getLanguageCode(): String {
+        return context.dataStore.data.first()[KEY_LANGUAGE_CODE] ?: "en"
+    }
+
     val languageFlow: Flow<String> = context.dataStore.data
         .map { prefs -> prefs[KEY_LANGUAGE_CODE] ?: "en" }
 }

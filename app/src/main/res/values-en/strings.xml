@@ -7,4 +7,10 @@
     <string name="en">English</string>
     <string name="ko">Korean</string>
     <string name="fr">French</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="ranking">Ranking</string>
+    <string name="top_albums">Top Albums</string>
+    <string name="see_all">See all</string>
+    <string name="top_tracks">Top Tracks</string>
+    <string name="top_artists">Top Artists</string>
 </resources>

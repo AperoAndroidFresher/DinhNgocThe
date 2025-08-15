@@ -32,8 +32,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
+import com.example.dinhngocthe.data.local.datastore.LanguageDataStore
 import com.example.dinhngocthe.presentation.components.LanguageDropDownMenu
 import com.example.dinhngocthe.utils.dynamicString
 
@@ -43,12 +45,14 @@ fun SettingScreen(
     onBack: () -> Unit,
     viewModel: SettingViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     var isLanguageDropDownMenuVisible by remember { mutableStateOf(false) }
-    var language by remember { mutableStateOf(state.languageCode) }
+    var language by remember { mutableStateOf("en") }
     var isButtonAgreeVisible = language != state.languageCode
 
     LaunchedEffect(Unit) {
+        language = LanguageDataStore(context).getLanguageCode()
         viewModel.processIntent(SettingIntent.LoadData)
     }
 
