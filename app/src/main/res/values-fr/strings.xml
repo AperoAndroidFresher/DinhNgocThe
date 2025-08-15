@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apero Music</string>
+    <string name="settings">Paramètre</string>
+    <string name="language">Langue</string>
+    <string name="vi">Vietnamien</string>
+    <string name="en">Anglais</string>
+    <string name="ko">Coréen</string>
+    <string name="fr">Français</string>
+    <string name="welcome_back">Content de te revoir!</string>
+    <string name="ranking">Classement</string>
+    <string name="top_albums">Meilleurs Albums</string>
+    <string name="see_all">Tout voir</string>
+    <string name="top_tracks">Meilleurs Morceaux</string>
+    <string name="top_artists">Meilleurs Artistes</string>
+</resources>

@@ -2,7 +2,7 @@ package com.example.dinhngocthe.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ProfileViewModel(
-    private val userPrefs: UserPreferences,
+    private val userPrefs: UserDataStore,
     private val userRepository: UserRepository
 ) : ViewModel() {
     val tag = "ProfileViewModel"
@@ -46,6 +46,17 @@ class ProfileViewModel(
             is ProfileIntent.DescriptionChanged -> _state.update { it.copy(description = intent.description) }
 
             is ProfileIntent.AvatarUriChanged -> _state.update { it.copy(avatarUri = intent.avatarUri) }
+
+            ProfileIntent.LogOut -> {
+                handleLogOut()
+            }
+        }
+    }
+
+    private fun handleLogOut() {
+        viewModelScope.launch {
+            userPrefs.removeUserId()
+            _event.emit(ProfileEvent.LogOut)
         }
     }
 

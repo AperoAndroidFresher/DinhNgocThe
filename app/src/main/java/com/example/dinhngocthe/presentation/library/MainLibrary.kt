@@ -1,7 +1,6 @@
 package com.example.dinhngocthe.presentation.library
 
-import android.os.Message
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,18 +42,18 @@ fun MainLibrary(
     expandedIndex: Int,
     isLoadingRemoteSongs: Boolean,
     remoteError: String,
-    selectedSongLocalIndex: Int,
-    selectedSongRemoteIndex: Int,
+    currentSongId: Long,
+    currentPlaySourceName: String,
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
     onInsertToPlaylist: (Long) -> Unit,
     reload: () -> Unit,
     viewOffline: () -> Unit,
-    onChangeSelectedSongLocalIndex: (Int) -> Unit,
-    onChangeSelectedSongRemoteIndex: (Int) -> Unit
+    onPlayMusic: (song: Song, currentPlaySourceName: String) -> Unit,
 ) {
     if (songSource == SongSource.LOCAL) { // Local mode
+        val songId = if (currentPlaySourceName == "local") currentSongId else -1
         LazyColumn(
             modifier = modifier.fillMaxWidth()
         ) {
@@ -64,11 +62,16 @@ fun MainLibrary(
                     song = localSongs[index],
                     index = index,
                     expandedIndex = expandedIndex,
-                    selectedSongIndex = selectedSongLocalIndex,
+                    currentSongId = songId,
                     onDismissMenu = onDismissMenu,
                     onShowMenu = { onShowMenu(index) },
                     addToPlaylist = { onInsertToPlaylist(localSongs[index].songId) },
-                    onChangeSelectedSongIndex = { onChangeSelectedSongLocalIndex(it) }
+                    onPlayMusic = {
+                        onPlayMusic(
+                            it,
+                            "local"
+                        )
+                    }
                 )
             }
         }
@@ -91,6 +94,7 @@ fun MainLibrary(
             }
         } else {
             if (remoteError == "") {
+                val songId = if (currentPlaySourceName == "remote") currentSongId else -1
                 LazyColumn(
                     modifier = modifier.fillMaxWidth()
                 ) {
@@ -99,11 +103,16 @@ fun MainLibrary(
                             song = remoteSongs[index],
                             index = index,
                             expandedIndex = expandedIndex,
-                            selectedSongIndex = selectedSongRemoteIndex,
+                            currentSongId = songId,
                             onDismissMenu = onDismissMenu,
                             onShowMenu = { onShowMenu(index) },
                             addToPlaylist = { onInsertToPlaylist(remoteSongs[index].songId) },
-                            onChangeSelectedSongIndex = { onChangeSelectedSongRemoteIndex(it) }
+                            onPlayMusic = {
+                                onPlayMusic(
+                                    it,
+                                    "remote"
+                                )
+                            }
                         )
                     }
                 }
@@ -123,20 +132,20 @@ private fun SongItem(
     song: Song,
     index: Int,
     expandedIndex: Int,
-    selectedSongIndex: Int,
+    currentSongId: Long,
     modifier: Modifier = Modifier,
     onDismissMenu: () -> Unit,
     onShowMenu: (Int) -> Unit,
     addToPlaylist: (Int) -> Unit,
-    onChangeSelectedSongIndex: (Int) -> Unit
+    onPlayMusic: (Song) -> Unit
 ) {
-    val color = if (selectedSongIndex == index) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+    val color = if (currentSongId == song.songId) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(color)
-            .clickable{ onChangeSelectedSongIndex(index) }
+            .clickable{ onPlayMusic(song) }
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row {
@@ -209,8 +218,9 @@ private fun SongItem(
 fun LoadMusicError(
     modifier: Modifier = Modifier,
     message: String,
-    reload: () -> Unit,
-    viewOffline: () -> Unit
+    enableButtonViewOffline: Boolean = true,
+    reload: () -> Unit = {},
+    viewOffline: () -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -252,22 +262,24 @@ fun LoadMusicError(
                 )
             }
 
-            Spacer(Modifier.size(20.dp))
+            if (enableButtonViewOffline) {
+                Spacer(Modifier.size(20.dp))
 
-            Button(
-                onClick = { viewOffline() },
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier
-                    .size(150.dp, 45.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            ) {
-                Text(
-                    text = "View offline",
-                    style = MaterialTheme.typography.labelSmall
-                )
+                Button(
+                    onClick = { viewOffline() },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .size(150.dp, 45.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                ) {
+                    Text(
+                        text = "View offline",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
 

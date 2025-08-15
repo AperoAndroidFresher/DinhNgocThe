@@ -7,18 +7,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.components.InputField
 import com.example.dinhngocthe.presentation.components.SuccessDialog
 import com.example.dinhngocthe.presentation.theme.AppFonts
@@ -41,7 +45,8 @@ fun ColumnScope.Main(
     onUniversityNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onChangeSuccessDialogState: (Boolean) -> Unit,
-    onSubmitChange: () -> Unit
+    onSubmitChange: () -> Unit,
+    onLogOut: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -128,6 +133,33 @@ fun ColumnScope.Main(
         ) {
             Text(
                 "Submit",
+                fontSize = 16.sp,
+                fontFamily = AppFonts.mainFontBold,
+            )
+        }
+    } else {
+        Button(
+            onClick = { onLogOut() },
+            modifier = modifier
+                .align(Alignment.CenterHorizontally)
+                .width(150.dp)
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.error
+            ),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_log__out),
+                contentDescription = "Icon log out",
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.size(8.dp))
+
+            Text(
+                "Log out",
                 fontSize = 16.sp,
                 fontFamily = AppFonts.mainFontBold,
             )

@@ -104,7 +104,6 @@ fun Header(
                     .data(avatarUri)
                     .size(imageSizePx)
                     .crossfade(true)
-                    .allowHardware(false)
                     .build(),
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,

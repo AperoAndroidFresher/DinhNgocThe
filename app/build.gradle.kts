@@ -44,6 +44,9 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 dependencies {
@@ -55,7 +58,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation("androidx.compose.material3:material3:1.3.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -103,4 +106,9 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
     implementation(libs.androidx.media)
+
+    // DataStore Preferences
+    implementation(libs.androidx.datastore.preferences)
+
+    implementation("com.github.SmartToolFactory:Compose-Colorful-Sliders:1.2.2")
 }

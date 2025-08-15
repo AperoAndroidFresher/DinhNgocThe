@@ -4,20 +4,30 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
+import com.example.dinhngocthe.service.musicstate.MusicStateHolder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    private val userPrefs: UserPreferences,
+    private val userPrefs: UserDataStore,
     private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow(PlaylistState())
-    val state = _state.asStateFlow()
+    private val _state: MutableStateFlow<PlaylistState> = MutableStateFlow(PlaylistState())
+    val state: StateFlow<PlaylistState> = _state.asStateFlow()
+
+    private val _event: MutableSharedFlow<PlaylistEvent> = MutableSharedFlow<PlaylistEvent>()
+    val event: SharedFlow<PlaylistEvent> = _event.asSharedFlow()
 
     fun processIntent(intent: PlaylistIntent) {
         when (intent) {
@@ -40,6 +50,20 @@ class PlaylistViewModel(
             is PlaylistIntent.DeleteSongFromPlaylist -> {
                 handleDeleteSongFromPlaylist(intent)
             }
+
+            is PlaylistIntent.PlayMusic -> {
+                handlePlayMusic(intent)
+            }
+        }
+    }
+
+    private fun handlePlayMusic(intent: PlaylistIntent.PlayMusic) {
+        viewModelScope.launch {
+            _event.emit(PlaylistEvent.PlayMusic(
+                currentSongId = intent.songId,
+                currentPlaySourceName = intent.currentPlaySourceName,
+                songIds = intent.songIds
+            ))
         }
     }
 
@@ -53,6 +77,17 @@ class PlaylistViewModel(
         viewModelScope.launch {
             playlistRepository.getSongWithPlaylistId().collect { songs ->
                 _state.update { it.copy(songs = songs) }
+            }
+        }
+
+        viewModelScope.launch {
+            MusicStateHolder.state.collectLatest { musicState ->
+                _state.update {
+                    it.copy(
+                        currentSongId = musicState.songId,
+                        currentPlaySourceName = musicState.currentPlaySourceName
+                    )
+                }
             }
         }
     }

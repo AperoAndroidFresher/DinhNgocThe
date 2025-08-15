@@ -1,15 +1,13 @@
 package com.example.dinhngocthe.data.repository
 
 import android.app.Application
-import android.content.Context
-import android.util.Log
 import com.example.dinhngocthe.data.local.LocalDatabase
 import com.example.dinhngocthe.data.local.dao.SongDao
 import com.example.dinhngocthe.data.local.datasource.DeviceSongDataSource
 import com.example.dinhngocthe.data.local.datasource.DownloadSongDataSource
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
-import com.example.dinhngocthe.data.remote.api.ApiClient
+import com.example.dinhngocthe.data.remote.api.remotesong.SongApiClient
 import com.example.dinhngocthe.data.remote.model.SongDto
 import com.example.dinhngocthe.domain.repository.SongRepository
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +24,10 @@ class SongRepositoryImpl(
     private val songDao: SongDao = localDatabase.songDao()
     override suspend fun downloadAndSaveSongDtosToStorage(songDtos: List<SongDto>): List<Song> {
         return downloadSongDataSource.downloadAndSaveSongDtosToStorage(context, songDtos)
+    }
+
+    override suspend fun getSongsBySongId(songIds: List<Long>): List<Song> {
+        return songDao.getSongsBySongId(songIds)
     }
 
     override suspend fun loadLocalSongsFromDevice(): List<Song>? {
@@ -48,7 +50,7 @@ class SongRepositoryImpl(
         onSuccess: (List<SongDto>) -> Unit,
         onFailure: (Throwable) -> Unit
     ) {
-        val call = ApiClient.build().getSongs()
+        val call = SongApiClient.build().getSongs()
         call.enqueue(object : Callback<List<SongDto>> {
             override fun onResponse(call: Call<List<SongDto>>, response: Response<List<SongDto>>) {
                 when {

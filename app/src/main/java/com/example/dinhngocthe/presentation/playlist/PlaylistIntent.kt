@@ -9,4 +9,9 @@ sealed interface PlaylistIntent {
     data class RenamePlaylist(val playlistId: Long, val playlistName: String) : PlaylistIntent
     data class DeleteSongFromPlaylist(val playlistId: Long, val songId: Long) : PlaylistIntent
     data object LoadData : PlaylistIntent
+    data class PlayMusic(
+        val songId: Long,
+        val currentPlaySourceName: String,
+        val songIds: List<Long>
+    ) : PlaylistIntent
 }

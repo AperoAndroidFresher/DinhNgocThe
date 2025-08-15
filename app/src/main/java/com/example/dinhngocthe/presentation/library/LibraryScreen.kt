@@ -1,5 +1,6 @@
 package com.example.dinhngocthe.presentation.library
 
+import android.app.Application
 import android.content.Intent
 import android.os.Build
 import android.util.Log
@@ -25,7 +26,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dinhngocthe.data.local.entities.SongSource
 import com.example.dinhngocthe.presentation.permission.RequestAudioPermissionIfNeeded
 import com.example.dinhngocthe.presentation.components.ChoosePlaylistDialog
+import com.example.dinhngocthe.presentation.components.InputField
 import com.example.dinhngocthe.service.MusicService
+import com.example.dinhngocthe.service.musicstate.MusicCloseSignal
+import com.example.dinhngocthe.service.musicstate.MusicPlayerLibrary
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -60,8 +65,6 @@ fun LibraryScreen(
     var songMenuIndex by remember { mutableIntStateOf(-1) }
     var isInsertToPlaylistDialogVisible by remember { mutableStateOf(false) }
     var selectedSongIdToAdd by remember { mutableLongStateOf(-1) }
-    var selectedSongLocalIndex by remember { mutableIntStateOf(-1) }
-    var selectedSongRemoteIndex by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(Unit) {
         viewModel.processIntent(LibraryIntent.LoadData)
@@ -74,15 +77,11 @@ fun LibraryScreen(
 
                 is LibraryEvent.PlayMusic -> {
                     val intent = Intent(context, MusicService::class.java).apply {
-                        action = MusicService.ACTION_START
-                        Log.d("LibraryScreen", event.songId.toString())
-                        putExtra("SONG_ID", event.songId)
+                        action = MusicService.ACTION_CLOSE
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        context.startForegroundService(intent)
-                    } else {
-                        context.startService(intent)
-                    }
+                    context.startService(intent)
+                    MusicCloseSignal.awaitClose().await()
+                    MusicPlayerLibrary.playMusic(event.song, event.currentSongSourceName, context)
                 }
             }
         }
@@ -112,8 +111,8 @@ fun LibraryScreen(
             expandedIndex = songMenuIndex,
             isLoadingRemoteSongs = state.isLoadingRemoteSongs,
             remoteError = state.remoteError,
-            selectedSongLocalIndex = selectedSongLocalIndex,
-            selectedSongRemoteIndex = selectedSongRemoteIndex,
+            currentSongId = state.currentSongId,
+            currentPlaySourceName = state.currentPlaySourceName,
             modifier = Modifier,
             onShowMenu = { songMenuIndex = it },
             onDismissMenu = { songMenuIndex = -1 },
@@ -123,15 +122,8 @@ fun LibraryScreen(
             },
             reload = { viewModel.processIntent(LibraryIntent.LoadData) },
             viewOffline = { viewModel.processIntent(LibraryIntent.ViewOffline) },
-            onChangeSelectedSongLocalIndex = {
-                selectedSongRemoteIndex = -1
-                selectedSongLocalIndex = it
-                viewModel.processIntent(LibraryIntent.PlayMusic(state.localSongs[it].songId))
-            },
-            onChangeSelectedSongRemoteIndex = {
-                selectedSongRemoteIndex = it
-                selectedSongLocalIndex = -1
-                viewModel.processIntent(LibraryIntent.PlayMusic(state.remoteSongs[it].songId))
+            onPlayMusic = { song, currentPlaySourceName ->
+                viewModel.processIntent(LibraryIntent.PlayMusic(song, currentPlaySourceName))
             }
         )
 

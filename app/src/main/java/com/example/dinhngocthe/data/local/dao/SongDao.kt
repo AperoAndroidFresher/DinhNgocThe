@@ -17,8 +17,8 @@ interface SongDao {
     @Query("SELECT * FROM song ORDER BY songName ASC")
     fun getAllSongs(): Flow<List<Song>>
 
-    @Query("SELECT * FROM song ORDER BY songName ASC")
-    suspend fun getAllSongsService(): List<Song>
+    @Query("SELECT * FROM song WHERE songId IN (:songIds)")
+    suspend fun getSongsBySongId(songIds: List<Long>): List<Song>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSongToPlaylist(playlistSongCrossRef: PlaylistSongCrossRef)

@@ -1,15 +1,22 @@
 package com.example.dinhngocthe.presentation.library
 
+import android.app.Application
+import android.media.MediaPlayer
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dinhngocthe.data.local.entities.Playlist
 import com.example.dinhngocthe.data.local.entities.PlaylistSongCrossRef
 import com.example.dinhngocthe.data.local.entities.Song
 import com.example.dinhngocthe.data.local.entities.SongSource
-import com.example.dinhngocthe.data.local.preferences.UserPreferences
+import com.example.dinhngocthe.data.local.datastore.UserDataStore
 import com.example.dinhngocthe.domain.repository.PlaylistRepository
 import com.example.dinhngocthe.domain.repository.SongRepository
+import com.example.dinhngocthe.service.musicstate.MusicState
+import com.example.dinhngocthe.service.musicstate.MusicStateHolder
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +26,14 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.koin.dsl.koinApplication
 
 class LibraryViewModel(
-    private val userPrefs: UserPreferences,
+    private val context: Application,
+    private val userDataStore: UserDataStore,
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
@@ -60,7 +71,7 @@ class LibraryViewModel(
 
     private fun handlePlayMusic(intent: LibraryIntent.PlayMusic) {
         viewModelScope.launch {
-            _event.emit(LibraryEvent.PlayMusic(intent.songId))
+            _event.emit(LibraryEvent.PlayMusic(intent.song, intent.currentPlaySourceName))
         }
     }
 
@@ -69,6 +80,15 @@ class LibraryViewModel(
         loadLocalSongsAndSaveToRoom()
         getAllPlaylistsByUserId()
         getSongsFromRoom()
+        getCurrentSongIdAndSourceName()
+    }
+
+    private fun getCurrentSongIdAndSourceName() {
+        viewModelScope.launch {
+            MusicStateHolder.state.collectLatest { musicState ->
+                _state.update { it.copy(currentSongId = musicState.songId, currentPlaySourceName = musicState.currentPlaySourceName) }
+            }
+        }
     }
 
     private fun getSongsFromRoom() {
@@ -86,7 +106,7 @@ class LibraryViewModel(
 
     private fun getAllPlaylistsByUserId() {
         viewModelScope.launch {
-            playlistRepository.getAllPlaylistsByUserId(userPrefs.getUserId()!!).collectLatest { playlists: List<Playlist> ->
+            playlistRepository.getAllPlaylistsByUserId(userDataStore.getUserId()!!).collectLatest { playlists: List<Playlist> ->
                 _state.update { it.copy(playlists = playlists) }
             }
         }

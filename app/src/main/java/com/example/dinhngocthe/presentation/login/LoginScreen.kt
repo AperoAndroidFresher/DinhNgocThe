@@ -51,7 +51,6 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    viewModel.checkAutoLogin()
 
     LaunchedEffect(Unit) {
         viewModel.event.collectLatest { event ->

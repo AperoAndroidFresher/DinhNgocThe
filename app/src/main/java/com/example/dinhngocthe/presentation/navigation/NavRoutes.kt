@@ -1,7 +1,9 @@
 package com.example.dinhngocthe.presentation.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -10,17 +12,32 @@ import com.example.dinhngocthe.R
 import com.example.dinhngocthe.presentation.home.HomeScreen
 import com.example.dinhngocthe.presentation.library.LibraryScreen
 import com.example.dinhngocthe.presentation.login.LoginScreen
+import com.example.dinhngocthe.presentation.miniplayer.MiniPlayer
+import com.example.dinhngocthe.presentation.musicplayer.MusicPlayerScreen
 import com.example.dinhngocthe.presentation.playlist.MyPlaylistScreen
 import com.example.dinhngocthe.presentation.profile.ProfileScreen
+import com.example.dinhngocthe.presentation.setting.SettingScreen
 import com.example.dinhngocthe.presentation.signup.SignUpScreen
 
 @Composable
 fun NavRoutes(
     onChangeMode: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isLogged: Boolean,
+    startDestinationAfterHome: String
 ) {
-    var backStack = rememberNavBackStack(Destination.LoginRoute)
+    val firstRoute = if (isLogged) Destination.HomeRoute else Destination.LoginRoute
+    var backStack = rememberNavBackStack(firstRoute)
     val currentRoute = backStack.lastOrNull() as Destination
+
+    LaunchedEffect(Unit) {
+        if (currentRoute == Destination.HomeRoute && startDestinationAfterHome.isNotBlank()) {
+            when (startDestinationAfterHome) {
+                "MUSIC_PLAYER" -> backStack.add(Destination.MusicPlayerRoute)
+            }
+        }
+    }
+
     val items = listOf<BottomNavBarItem>(
         BottomNavBarItem(0, "Home", R.drawable.ic_home, Destination.HomeRoute),
         BottomNavBarItem(1, "Library", R.drawable.ic_library, Destination.LibraryRoute),
@@ -30,16 +47,22 @@ fun NavRoutes(
     Scaffold(
         bottomBar = {
             if (currentRoute in items.map { it.route }) {
-                BottomNavBar(
-                    currentRoute = currentRoute,
-                    onItemClick = { destination ->
-                        if (destination != backStack.lastOrNull()) {
-                            backStack.clear()
-                            backStack.add(destination)
-                        }
-                    },
-                    items
-                )
+                Column {
+                    MiniPlayer(
+                        navigateToMusicPlayerScreen = { backStack.add(Destination.MusicPlayerRoute) }
+                    )
+
+                    BottomNavBar(
+                        currentRoute = currentRoute,
+                        onItemClick = { destination ->
+                            if (destination != backStack.lastOrNull()) {
+                                backStack.clear()
+                                backStack.add(destination)
+                            }
+                        },
+                        items
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -70,6 +93,9 @@ fun NavRoutes(
                         innerPadding = innerPadding,
                         navigateToProfileScreen = {
                             backStack.add(Destination.ProfileRoute)
+                        },
+                        navigateToSettingScreen = {
+                            backStack.add(Destination.SettingRoute)
                         }
                     )
                 }
@@ -78,6 +104,10 @@ fun NavRoutes(
                     ProfileScreen(
                         onChangeMode = onChangeMode,
                         isDarkTheme,
+                        onLogOut = {
+                            backStack.clear()
+                            backStack.add(Destination.LoginRoute)
+                        },
                         innerPadding = innerPadding
                     )
                 }
@@ -94,6 +124,20 @@ fun NavRoutes(
 
                 entry<Destination.PlaylistRoute> {
                     MyPlaylistScreen(innerPadding = innerPadding)
+                }
+
+                entry<Destination.MusicPlayerRoute> {
+                    MusicPlayerScreen(
+                        innerPadding = innerPadding,
+                        onBack = { backStack.removeLastOrNull() }
+                    )
+                }
+
+                entry<Destination.SettingRoute> {
+                    SettingScreen(
+                        innerPadding = innerPadding,
+                        onBack = { backStack.removeLastOrNull() }
+                    )
                 }
             }
         )
